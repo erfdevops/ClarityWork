@@ -1,0 +1,256 @@
+<template>
+    <div class="profile-container">
+        <!-- Header with Back Button -->
+        <div class="profile-header">
+            <lightning-button 
+                icon-name="utility:back"
+                variant="base"
+                onclick={handleBack}
+                class="back-button">
+            </lightning-button>
+            <h1 class="profile-title">My Profile</h1>
+        </div>
+
+        <!-- Personal Information Section -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2 class="section-title">Personal Information</h2>
+                <template if:true={allowProfileEdit}>
+                    <lightning-button-icon
+                        icon-name="utility:edit"
+                        alternative-text="Edit"
+                        onclick={handleEditPersonal}
+                        class="edit-button">
+                    </lightning-button-icon>
+                </template>
+            </div>
+            
+            <div class="profile-info-row">
+                <div class="profile-avatar">
+                    <img src={userPhoto} alt={userName} class="avatar-image" />
+                </div>
+                <div class="profile-basic-info">
+                    <h3 class="user-name">{firstName} {lastName}</h3>
+                    <p class="employee-id">Email: {email}</p>
+                </div>
+                <div class="profile-external-url">
+                    <a 
+                        href="https://dallascityhall.okta.com/" 
+                        target="_blank" 
+                        title="To update your contact information, use this link to log into Workday to make the change.">
+                        <!--Link to Workday-->
+                        Update Personal Information
+                    </a>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <label class="info-label">Email</label>
+                    <p class="info-value">{email}</p>
+                </div>
+                <div class="info-item">
+                    <label class="info-label">Phone Number</label>
+                    <p class="info-value">{phoneNumber}</p>
+                </div>
+                <div class="info-item">
+                    <label class="info-label">Retirement Date</label>
+                    <p class="info-value">{retirementDate}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Address Information Section -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2 class="section-title">Address Information</h2>
+                <template if:true={allowProfileEdit}>
+                    <lightning-button-icon
+                        icon-name="utility:edit"
+                        alternative-text="Edit"
+                        onclick={handleEditAddress}
+                        class="edit-button">
+                    </lightning-button-icon>
+                </template>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <label class="info-label">Address line 1</label>
+                    <p class="info-value">{mailingStreet}</p>
+                </div>
+                <div class="info-item">
+                    <label class="info-label">City</label>
+                    <p class="info-value">{mailingCity}</p>
+                </div>
+                <div class="info-item">
+                    <label class="info-label">State</label>
+                    <p class="info-value">{mailingState}</p>
+                </div>
+                <div class="info-item">
+                    <label class="info-label">Country</label>
+                    <p class="info-value">{mailingCountry}</p>
+                </div>
+                <div class="info-item">
+                    <label class="info-label">Postal code</label>
+                    <p class="info-value">{mailingPostalCode}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Password Section -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2 class="section-title">Security Password</h2>
+            </div>
+            <div class="password-section">
+                <p class="section-description">Please enter your current password to change your password.</p>
+                <button class="update-password-button" onclick={handleUpdatePassword}>Update Password</button>
+            </div>
+        </div>
+
+        <!-- Edit Modals (only rendered when profile editing is allowed) -->
+        <template if:true={allowProfileEdit}>
+        <!-- Edit Personal Information Modal -->
+        <template if:true={showEditPersonalModal}>
+            <div class="modal-overlay" onclick={handleClosePersonalModal}>
+                <div class="modal-dialog" onclick={stopPropagation}>
+                    <div class="modal-header">
+                        <h2>Edit Personal Information</h2>
+                        <lightning-button-icon
+                            icon-name="utility:close"
+                            alternative-text="Close"
+                            onclick={handleClosePersonalModal}
+                            class="modal-close-btn">
+                        </lightning-button-icon>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="editPhone" class="form-label">Phone Number</label>
+                            <lightning-input 
+                                id="editPhone"
+                                type="tel" 
+                                data-field="phoneNumber"
+                                value={editPersonalData.phoneNumber}
+                                onchange={handlePersonalInputChange}
+                                class="form-input">
+                            </lightning-input>
+                        </div>
+                        <div class="form-group">
+                            <label for="editRetirementDate" class="form-label">Retirement Date</label>
+                            <lightning-input 
+                                id="editRetirementDate"
+                                type="date" 
+                                data-field="retirementDate"
+                                value={editPersonalData.retirementDate}
+                                onchange={handlePersonalInputChange}
+                                class="form-input">
+                            </lightning-input>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <lightning-button 
+                            label="Cancel"
+                            onclick={handleClosePersonalModal}
+                            disabled={isLoading}>
+                        </lightning-button>
+                        <lightning-button 
+                            label="Save Changes"
+                            variant="brand"
+                            onclick={handleSavePersonal}
+                            disabled={isLoading}>
+                        </lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Edit Address Modal -->
+        <template if:true={showEditAddressModal}>
+            <div class="modal-overlay" onclick={handleCloseAddressModal}>
+                <div class="modal-dialog" onclick={stopPropagation}>
+                    <div class="modal-header">
+                        <h2>Edit Address Information</h2>
+                        <lightning-button-icon
+                            icon-name="utility:close"
+                            alternative-text="Close"
+                            onclick={handleCloseAddressModal}
+                            class="modal-close-btn">
+                        </lightning-button-icon>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="editAddressLine1" class="form-label">Address Line 1</label>
+                            <lightning-input 
+                                id="editAddressLine1"
+                                type="text" 
+                                data-field="mailingStreet"
+                                value={editAddressData.mailingStreet}
+                                onchange={handleAddressInputChange}
+                                class="form-input">
+                            </lightning-input>
+                        </div>
+                        <div class="form-group">
+                            <label for="editCity" class="form-label">City</label>
+                            <lightning-input 
+                                id="editCity"
+                                type="text" 
+                                data-field="mailingCity"
+                                value={editAddressData.mailingCity}
+                                onchange={handleAddressInputChange}
+                                class="form-input">
+                            </lightning-input>
+                        </div>
+                        <div class="form-group">
+                            <label for="editState" class="form-label">State</label>
+                            <lightning-input 
+                                id="editState"
+                                type="text" 
+                                data-field="mailingState"
+                                value={editAddressData.mailingState}
+                                onchange={handleAddressInputChange}
+                                class="form-input">
+                            </lightning-input>
+                        </div>
+                        <div class="form-group">
+                            <label for="editCountry" class="form-label">Country</label>
+                            <lightning-input 
+                                id="editCountry"
+                                type="text" 
+                                data-field="mailingCountry"
+                                value={editAddressData.mailingCountry}
+                                onchange={handleAddressInputChange}
+                                class="form-input">
+                            </lightning-input>
+                        </div>
+                        <div class="form-group">
+                            <label for="editPostalCode" class="form-label">Postal Code</label>
+                            <lightning-input 
+                                id="editPostalCode"
+                                type="text" 
+                                data-field="mailingPostalCode"
+                                value={editAddressData.mailingPostalCode}
+                                onchange={handleAddressInputChange}
+                                class="form-input">
+                            </lightning-input>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <lightning-button 
+                            label="Cancel"
+                            onclick={handleCloseAddressModal}
+                            disabled={isLoading}>
+                        </lightning-button>
+                        <lightning-button 
+                            label="Save Changes"
+                            variant="brand"
+                            onclick={handleSaveAddress}
+                            disabled={isLoading}>
+                        </lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+        </template><!-- end allowProfileEdit -->
+    </div>
+</template>

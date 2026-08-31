@@ -1,0 +1,26 @@
+/* Custom spacing for radio button labels */
+.slds-radio .slds-radio_label {
+    margin-left: 12px;
+    line-height: 1.5;
+}
+
+/* Ensure proper alignment */
+.slds-radio {
+    display: flex;
+    align-items: flex-start;
+}
+
+/* Add some padding to the radio button container */
+.slds-radio {
+    padding: 8px 0;
+}
+
+/* Improve overall spacing for quiz options */
+.quiz-option {
+    margin-bottom: 12px;
+}
+
+/* Style the radio button container for better visual hierarchy */
+.slds-radio .slds-radio_faux {
+    margin-top: 2px;
+}

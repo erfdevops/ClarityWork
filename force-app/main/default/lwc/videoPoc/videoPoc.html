@@ -1,0 +1,20 @@
+<template>
+    <div class="video-poc-container">
+        <div class="video-card">
+            <div class="card-header">
+                <h2 class="card-title">Video POC</h2>
+                <p class="card-description">Embedded YouTube Video Demonstration</p>
+            </div>
+            <div class="video-wrapper">
+                <iframe
+                    src={youtubeEmbedUrl}
+                    title="YouTube video player"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen
+                    class="video-iframe">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>InitiativeCount__c</fullName>
+    <description>A roll-up summary field used to calculate the total number of Initiative records related to the Business Pillar.</description>
+    <label>Initiative Count</label>
+    <summaryFilterItems>
+        <field>Initiative__c.Fiscal_Year__c</field>
+        <operation>equals</operation>
+        <value>October 2025 - September 2026</value>
+    </summaryFilterItems>
+    <summaryForeignKey>Initiative__c.BusinessPillar__c</summaryForeignKey>
+    <summaryOperation>count</summaryOperation>
+    <trackTrending>false</trackTrending>
+    <type>Summary</type>
+</CustomField>

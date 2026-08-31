@@ -1,0 +1,183 @@
+<template>
+    <div class="general-container">
+        <div class="container-head">
+            <div class="table-head-left-panel">
+                <div class="table-head-title">{tabletitle}</div>
+                <div class="table-legend-records">
+                    {recordsAmount} of {listSize} records
+                </div>
+            </div>
+            <div class="table-head-right-panel">
+                <div class="table-head-button" onclick={getAllUserFiles}>
+                    All Documents
+                </div>
+                <div class="table-head-button" onclick={openFileUploader}>
+                    + Upload Document
+                </div>
+            </div>
+        </div>
+        <div class="container-body">
+            <table>
+                <tr class={tableStyleForColumnLabels}>
+                    <template for:each={tableColumns} for:item="tableColumn">
+                        <th key={tableColumn.label} class={tableColumn.class} style={tableColumn.style}>
+                            <template if:true={tableColumn.sorting}>
+                                <div class="column-title-container">
+                                    <div class="column-title-text">
+                                        {tableColumn.label}
+                                    </div>
+                                    <div class="column-title-icon" onclick={sortDataByColumn} data-sortingfield={tableColumn.fieldName}>
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M10.3312 6.33333L7.99838 4L5.66553 6.33333" stroke="#757575" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M10.3312 9.33325L7.99838 11.6666L5.66553 9.33325" stroke="#757575" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </template>
+                            <template if:false={tableColumn.sorting}>
+                                <div class="column-title-text">
+                                    {tableColumn.label}
+                                </div>
+                            </template>
+                        </th>
+                    </template>
+                    <template if:true={tableHasActions}>
+                        <th class="action-column">
+                            <div class="column-title-container">
+                                Action
+                            </div>
+                        </th>
+                    </template>
+                </tr>
+                <template if:false={noFilesAvailable}>
+                    <template for:each={paginatedTableData} for:item="tableRow">
+                        <tr key={tableRow.contentDocumentId} class={tableStyleForCells}>
+                            <td>{tableRow.documentTitle}</td>
+                            <td>{tableRow.relatedTo}</td>
+                            <td>{tableRow.dateUploaded}</td>
+                            <td>{tableRow.fileFormat}</td>
+                            <template if:true={tableHasActions}>
+                                <td>
+                                    <div>
+                                        <div class="action-menu-button" onmouseenter={toggleActionMenu} data-recordid={tableRow.contentDocumentId}>
+                                            <svg width="21" height="20" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M5.49902 7.5L10.499 12.5L15.499 7.5" stroke="#757575" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>    
+                                        </div>
+                                        <div data-reference-id={tableRow.contentDocumentId} class={actionMenuStyle} onmouseleave={untoggleActionMenu}>
+                                            <div class="action-menu-item">
+                                                <a href={tableRow.fileUrl} target="_blank">Download</a>
+                                            </div>
+                                            <div class="action-menu-item" onclick={handleDeleteDocument} data-rowid={tableRow.contentDocumentId} data-rowname={tableRow.documentTitle}>
+                                                Delete
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </template>
+                        </tr>
+                    </template>
+                </template>
+                <template if:true={noFilesAvailable}>
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state-image">
+                                <img width="400" src={emptyStateImageUrl} alt="No data found">
+                            </div>
+                        </td>
+                    </tr>
+                </template>
+            </table>
+        </div>
+        <div class="container-foot">
+            <template if:false={noFilesAvailable}>
+                <div class="pagination-section">
+                    <div class="pagination-arrows" onclick={paginationPrevious}>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15.8334 9.99996H4.16675M4.16675 9.99996L10.0001 15.8333M4.16675 9.99996L10.0001 4.16663" stroke="#3F3E3B" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="pagination-numbers">
+                        <template for:each={pagesArray} for:item="page">
+                            <div key={page.pageId} class={page.cssClass} data-page={page.pageNumber} onclick={handleDirectPageClick}>
+                                {page.pageNumber}
+                            </div>
+                        </template>
+                    </div>
+                    <div class="pagination-arrows" onclick={paginationNext}>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4.16675 9.99996H15.8334M15.8334 9.99996L10.0001 4.16663M15.8334 9.99996L10.0001 15.8333" stroke="#3F3E3B" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>                    
+                    </div> 
+                </div>
+            </template>
+        </div>
+        <template if:true={showUploadFileModal}>
+            <div class="modal-wrapper">
+                <div class="modal-container">
+                         
+                    <div class="modal-header">
+                        <div class="modal-header-title">
+                            Add Document
+                        </div>
+                        <div class="modal-header-button">
+                            <button class="close-button" onclick={closeFileUploader}>×</button>
+                        </div>
+                    </div>
+                    <div class="modal-body-drag-file">
+                        <div class="file-data-label">Documents Upload</div>
+                        <div class="drag-container" id="dropContainer" 
+                            ondrop={fileUploadDropHandler}
+                            ondragover={fileUploadDragOverHandler} 
+                            onclick={fileUploadClickHandler}>
+                            <div class="drag-wrapper">
+                                <div class="drag-svg">
+                                    <svg width="45" height="45" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M41.4929 20.9187L41.4836 20.8812L36.2242 7.51719C35.9898 6.7625 35.2914 6.24219 34.4992 6.24219H13.1804C12.3836 6.24219 11.6757 6.77188 11.4507 7.53594L6.53355 20.7641L6.51949 20.7969L6.51012 20.8344C6.44918 21.0641 6.43043 21.2984 6.46324 21.5281C6.45855 21.6031 6.45387 21.6781 6.45387 21.7531V38.9047C6.45511 39.6602 6.75577 40.3844 7.28998 40.9186C7.82419 41.4528 8.54838 41.7534 9.30387 41.7547H38.7039C40.2742 41.7547 41.5539 40.475 41.5586 38.9047V21.7531C41.5586 21.6922 41.5586 21.6312 41.5539 21.5797C41.5726 21.35 41.5539 21.1297 41.4929 20.9187ZM27.6273 18.9031L27.6132 19.6391C27.5757 21.7437 26.1226 23.1594 23.9992 23.1594C22.9632 23.1594 22.0726 22.8266 21.4304 22.1937C20.7882 21.5609 20.4367 20.6797 20.4179 19.6391L20.4039 18.9031H10.757L14.4836 9.84219H33.1961L37.0257 18.9031H27.6273ZM10.0492 22.5031H17.4226C18.5617 25.1797 20.9851 26.7594 24.0039 26.7594C25.5836 26.7594 27.0507 26.3187 28.2367 25.4844C29.2773 24.7531 30.0882 23.7312 30.6132 22.5031H37.9492V38.1547H10.0492V22.5031Z" fill="#757575"/>
+                                    </svg>
+                                </div>
+                                <div class="drag-text">
+                                    <div class="drag-text-title">
+                                        Click or drag file to upload
+                                    </div>
+                                    <div class="drag-text-subtitle">
+                                        Support for a single or bulk upload
+                                    </div>
+                                </div>
+                            </div>
+                            <template if:true={showInputFile}>
+                                <div class="drag-wrapper">
+                                    <div class="drag-input-file">
+                                        <input type="file" id="fileInput" onchange={fileUploadThroughInput} multiple accept=".pdf">
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="modal-files-container">
+                        <template if:true={filesToUpload}>
+                            <template for:each={filesToUpload} for:item="newfile">
+                                <div class="modal-body-input-data" key={newfile.cleanName}>
+                                    <div class="file-data-wrapper">
+                                        <div class="file-data-label">Documents Name</div>
+                                        <div class="file-data-input">
+                                            {newfile.name}
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="modal-footer-button button-cancel" onclick={closeFileUploader}>
+                            Cancel
+                        </div>
+                        <div class="modal-footer-button button-save" onclick={saveNewUploadedFiles}>
+                            Save Document
+                        </div>
+                    </div>  
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

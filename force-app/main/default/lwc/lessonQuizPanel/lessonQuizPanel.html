@@ -1,0 +1,251 @@
+<template>
+    <div class="slds-box slds-m-top_large" style="background:#fafbfc;">
+        <div class="slds-text-title_caps slds-m-bottom_x-small">Knowledge Check</div>
+        
+        <!-- Show completion message if user just completed the quiz -->
+        <template if:true={isQuizCompleted}>
+            <!-- PASSED - Show success message -->
+            <template if:true={quizPassed}>
+                <div class="slds-align_absolute-center slds-m-vertical_large">
+                    <div class="slds-text-align_center">
+                        <div class="slds-text-heading_large slds-m-bottom_medium" style="color: #155724;">
+                            🎉 Congratulations!
+                        </div>
+                        <div class="slds-text-title_bold slds-m-bottom_small" style="color: #155724; font-size: 18px;">
+                            You passed the quiz!
+                        </div>
+                        <div class="slds-text-title slds-m-bottom_small">
+                            Your Score: {score}%
+                        </div>
+                        <div class="slds-text-body_regular slds-m-bottom_medium">
+                            You answered {score}% of the questions correctly.
+                        </div>
+                        <!-- Retake Quiz Button after passing -->
+                        <div class="slds-m-top_medium">
+                            <button 
+                                class="slds-button slds-button_neutral"
+                                style="background: #004e14; border-color: #004e14; color: #fff; border-radius: 6px; font-weight: 500;"
+                                onclick={handleRetakeQuiz}>
+                                Retake Quiz
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+            
+            <!-- FAILED - Show warning message -->
+            <template if:false={quizPassed}>
+                <div class="slds-align_absolute-center slds-m-vertical_large">
+                    <div class="slds-text-align_center">
+                        <div class="slds-text-heading_large slds-m-bottom_medium" style="color: #856404;">
+                            Quiz Completed
+                        </div>
+                        <div class="slds-text-title_bold slds-m-bottom_small" style="color: #856404; font-size: 18px;">
+                            You did not pass this quiz
+                        </div>
+                        <div class="slds-text-title slds-m-bottom_small">
+                            Your Score: {score}%
+                        </div>
+                        <div class="slds-text-body_regular slds-m-bottom_medium">
+                            You need to retake the quiz to pass this lesson.
+                        </div>
+                        <!-- Retake Quiz Button after failing -->
+                        <div class="slds-m-top_medium">
+                            <button 
+                                class="slds-button slds-button_brand"
+                                style="background: #d32f2f; border-color: #d32f2f; color: #fff; border-radius: 6px; font-weight: 500;"
+                                onclick={handleRetakeQuiz}>
+                                Retake Quiz
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </template>
+        
+        <!-- Show existing result if available (only when NOT just completed) -->
+        <template if:false={isQuizCompleted}>
+            <template if:true={existingResult}>
+            <!-- PASSED - Show success message -->
+            <template if:true={existingResult.passed}>
+                <div class="slds-box slds-theme_success slds-m-bottom_medium" style="background:#d4edda; border: 1px solid #c3e6cb; border-radius: 6px;">
+                    <div class="slds-text-title_bold slds-m-bottom_small" style="color: #155724;">
+                        🎉 Congratulations! You passed this quiz!
+                    </div>
+                    <div style="color: #155724;">
+                        <p class="slds-m-bottom_x-small">You scored <strong>{formattedPercentage}%</strong> on this knowledge check.</p>
+                        <p class="slds-m-bottom_small">Completed on {formattedCompletedDate}</p>
+                    </div>
+                    <!-- Retake Quiz Button for passed quiz -->
+                    <div class="slds-m-top_medium">
+                        <button 
+                            class="slds-button slds-button_neutral"
+                            style="background: #004e14; border-color: #004e14; color: #fff; border-radius: 6px; font-weight: 500;"
+                            onclick={handleRetakeQuiz}>
+                            Retake Quiz
+                        </button>
+                    </div>
+                </div>
+            </template>
+            
+            <!-- FAILED - Show warning message with retake option -->
+            <template if:false={existingResult.passed}>
+                <div class="slds-box slds-theme_warning slds-m-bottom_medium" style="background:#fff3cd; border: 1px solid #ffc107; border-radius: 6px;">
+                    <div class="slds-text-title_bold slds-m-bottom_small" style="color: #856404;">
+                        You did not pass this quiz
+                    </div>
+                    <div style="color: #856404;">
+                        <p class="slds-m-bottom_x-small">You scored <strong>{formattedPercentage}%</strong> on this knowledge check.</p>
+                        <p class="slds-m-bottom_small">Completed on {formattedCompletedDate}</p>
+                        <p class="slds-m-bottom_small">You need to retake the quiz to pass this lesson.</p>
+                    </div>
+                    <!-- Retake Quiz Button for failed quiz -->
+                    <div class="slds-m-top_medium">
+                        <button 
+                            class="slds-button slds-button_brand"
+                            style="background: #d32f2f; border-color: #d32f2f; color: #fff; border-radius: 6px; font-weight: 500;"
+                            onclick={handleRetakeQuiz}>
+                            Retake Quiz
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </template>
+        
+        <!-- Show quiz instructions and form if no existing result -->
+        <template if:false={existingResult}>
+            <div class="slds-text-body_regular slds-m-bottom_medium">
+       <!--     This quiz includes {totalQuestions} questions, and you must select one answer from the four available options for each. Upon completing the test, you will receive a score result expressed as a percentage of the quiz. -->
+        </div>
+        
+        <template if:false={isQuizCompleted}>
+            <template if:true={currentQuestion}>
+                <div class="slds-m-bottom_large">
+                    <div class="slds-text-title_bold slds-m-bottom_small">
+                        {currentQuestion.questionNumber}. {currentQuestion.text}
+                    </div>
+                    
+                    <!-- Single Select Response Questions (Radio Buttons) -->
+                    <template if:true={currentQuestion.isSingleSelect}>
+                        <template for:each={currentQuestion.options} for:item="option">
+                            <div key={option.id} class="quiz-option slds-m-bottom_small">
+                                <label class="slds-radio">
+                                    <input 
+                                        type="radio" 
+                                        name={currentQuestion.id} 
+                                        value={option.id}
+                                        data-question-id={currentQuestion.id}
+                                        data-option-id={option.id}
+                                        checked={option.selected}
+                                        onchange={handleOptionSelect} 
+                                    />
+                                    <span class="slds-radio_faux"></span>
+                                    <span class="slds-radio_label">{option.text}</span>
+                                </label>
+                            </div>
+                        </template>
+                    </template>
+                    
+                    <!-- Multi Select Response Questions (Checkboxes) -->
+                    <template if:true={currentQuestion.isMultiSelect}>
+                        <template for:each={currentQuestion.options} for:item="option">
+                            <div key={option.id} class="quiz-option slds-m-bottom_small">
+                                <label class="slds-checkbox">
+                                    <input 
+                                        type="checkbox" 
+                                        name={currentQuestion.id} 
+                                        value={option.id}
+                                        data-question-id={currentQuestion.id}
+                                        data-option-id={option.id}
+                                        checked={option.selected}
+                                        onchange={handleMultiOptionSelect} 
+                                    />
+                                    <span class="slds-checkbox_faux"></span>
+                                    <span class="slds-checkbox_label">{option.text}</span>
+                                </label>
+                            </div>
+                        </template>
+                    </template>
+                    
+                    <!-- Short Text Response Questions (Text Area) -->
+                    <template if:true={currentQuestion.isShortText}>
+                        <div class="slds-form-element slds-m-top_small">
+                            <div class="slds-form-element__control">
+                                <lightning-textarea
+                                    name={currentQuestion.id}
+                                    value={currentQuestion.textAnswer}
+                                    placeholder="Enter your answer here..."
+                                    rows="4"
+                                    max-length="500"
+                                    data-question-id={currentQuestion.id}
+                                    onchange={handleTextAnswerChange}>
+                                </lightning-textarea>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+            
+            <div class="slds-grid slds-grid_align-center slds-m-top_large" style="align-items: center; justify-content: flex-end; gap: 1rem;">
+                <span class="slds-text-body_small slds-text-color_weak" style="line-height: 1; white-space: nowrap;">
+                    {currentQuestionNumber}/{totalQuestions}
+                </span>
+                <div class="slds-grid slds-grid_align-center" style="gap: 0.5rem;">
+                    <button 
+                        class="slds-button slds-button_neutral"
+                        style="border-radius: 6px; font-weight: 500; margin: 0;"
+                        disabled={isFirstQuestion}
+                        onclick={handlePrevious}>
+                        Previous
+                    </button>
+                    <button 
+                        class="slds-button slds-button_brand" 
+                        style="background: #004e14; border-color: #004e14; color: #fff; border-radius: 6px; font-weight: 500; box-shadow: 0 2px 4px rgba(0, 78, 20, 0.2); margin: 0;"
+                        onclick={handleNext}>
+                        {nextButtonLabel}
+                    </button>
+                </div>
+            </div>
+        </template>
+        </template> <!-- Close the "if:false={isQuizCompleted}" template -->
+        </template> <!-- Close the "if:false={existingResult}" template -->
+        
+        <!-- Retake Warning Modal -->
+        <template if:true={showRetakeWarning}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <h2 class="slds-text-heading_medium">Retake Quiz Warning</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <div class="slds-text-body_regular">
+                            <p class="slds-m-bottom_small">
+                                <strong>Warning:</strong> Retaking this quiz will permanently delete your previous quiz results and responses.
+                            </p>
+                            <p class="slds-m-bottom_small">
+                                Your current score of <strong>{formattedPercentage}%</strong> will be lost.
+                            </p>
+                            <p>
+                                Are you sure you want to continue?
+                            </p>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button 
+                            class="slds-button slds-button_neutral" 
+                            onclick={handleCancelRetake}>
+                            Cancel
+                        </button>
+                        <button 
+                            class="slds-button slds-button_brand" 
+                            style="background: #d32f2f; border-color: #d32f2f;"
+                            onclick={handleConfirmRetake}>
+                            Yes, Retake Quiz
+                        </button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+    </div>
+</template>

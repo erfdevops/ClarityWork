@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Initiative_Type__c</fullName>
+    <label>Initiative Type</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>40A Initiative</fullName>
+                <default>false</default>
+                <label>40A Initiative</label>
+            </value>
+            <value>
+                <fullName>Support Initiative</fullName>
+                <default>false</default>
+                <label>Support Initiative</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

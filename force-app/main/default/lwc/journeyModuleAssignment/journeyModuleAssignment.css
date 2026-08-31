@@ -1,0 +1,13 @@
+.assigned-row td {
+    color: #9aabb8;
+    font-style: italic;
+}
+
+.assigned-row lightning-input {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+th.slds-is-sortable {
+    cursor: pointer;
+}

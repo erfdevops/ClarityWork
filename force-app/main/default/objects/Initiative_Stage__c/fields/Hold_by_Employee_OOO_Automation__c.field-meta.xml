@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Hold_by_Employee_OOO_Automation__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Tells whether or not was placed on hold by the Employee Out of Office automation</description>
+    <label>Hold by Employee OOO Automation?</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

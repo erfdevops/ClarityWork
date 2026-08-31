@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ERF_Performance_Evaluation</fullName>
+    <fields>Name</fields>
+    <fields>Employee__c</fields>
+    <fields>Type__c</fields>
+    <fields>Manager__c</fields>
+    <fields>IDP__c</fields>
+    <fields>ECIP_I__c</fields>
+    <fields>ECIP_II__c</fields>
+    <label>ERF Performance Evaluation</label>
+</CompactLayout>

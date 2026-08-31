@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Actual_Consumed_Budget__c</fullName>
+    <label>Actual Consumed Budget</label>
+    <summarizedField>Budget_Line_Item__c.Amount__c</summarizedField>
+    <summaryForeignKey>Budget_Line_Item__c.Budget__c</summaryForeignKey>
+    <summaryOperation>sum</summaryOperation>
+    <trackTrending>false</trackTrending>
+    <type>Summary</type>
+</CustomField>

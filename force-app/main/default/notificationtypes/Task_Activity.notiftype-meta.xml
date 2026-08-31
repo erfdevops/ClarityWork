@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomNotificationType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>Task Activity</masterLabel>
+    <customNotifTypeName>Task_Activity</customNotifTypeName>
+    <description>Bell notifications for Clarity task activity: mentions, assignments, status changes, and due date reminders.</description>
+    <desktop>true</desktop>
+    <mobile>true</mobile>
+</CustomNotificationType>

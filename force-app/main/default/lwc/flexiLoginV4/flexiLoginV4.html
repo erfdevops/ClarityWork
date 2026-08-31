@@ -1,0 +1,54 @@
+<template>
+    <template if:true={isDesktopScreen}>
+        <div class="layout-container" style={backgroundStyle}>
+            <div class="login-card-layout">
+                <div class="login-texts-container">
+                    <div class="logo-top">
+                        <img src={imageLogoLogin} width="250"/>
+                    </div>
+                    <div class="login-description">
+                        To submit your Retirement Documents, enter your Username & Password below.
+                    </div>
+                </div>
+                <div class="input-btn-container">
+                    <div class="input-login-btn-container">
+                        <div class="inputs-container">
+                            <input type="text" class="mat-input" tabindex="0" data-field="username" placeholder="Username" oninput={handleUsernameChange}>
+                            <input type="password" class="mat-input" tabindex="0" data-field="password" placeholder="Password" oninput={handlePasswordChange}>
+                        </div>
+                        <div class="btn-login" onclick={handleLogin}>Login</div>
+                    </div>
+
+                    <div class="forgetPassword-btn" onclick={navigateToResetPassword}>Forgot your password?</div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template if:false={isDesktopScreen}>
+        <div class="mobile-layout-container" style={backgroundStyle}>
+            <div style="height: 52px; width: 250px; transform: scale(1.2);">
+                <img src={imageLogoLogin} />
+            </div>
+            <div class="mobile-login-card-layout">
+                <div class="mobile-login-texts-container">
+                    <div class="mobile-login-heading">
+                        Retire Now Login
+                    </div>
+                    <div class="mobile-login-description">
+                        Enter your username and password to submit your Retirement Documents.
+                    </div>
+                </div>
+                <div class="mobile-input-btn-container">
+                    <div class="mobile-input-login-btn-container">
+                        <div class="mobile-inputs-container">
+                            <input type="text" class="mobile-mat-input" tabindex="0" data-field="username" placeholder="Username" oninput={handleUsernameChange}>
+                            <input type="password" class="mobile-mat-input" tabindex="0" data-field="password" placeholder="Password" oninput={handlePasswordChange}>
+                        </div>
+                        <div class="mobile-btn-login">Login</div>
+                    </div>
+                    <div class="forgetPassword-btn" onclick={navigateToResetPassword}>Forgot your password?</div>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

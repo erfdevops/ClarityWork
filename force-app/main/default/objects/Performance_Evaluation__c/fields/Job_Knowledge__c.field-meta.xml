@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Job_Knowledge__c</fullName>
+    <label>Job Knowledge</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Did not meet expectations</fullName>
+                <default>false</default>
+                <label>Did not meet expectations</label>
+            </value>
+            <value>
+                <fullName>Met some but not all expectations</fullName>
+                <default>false</default>
+                <label>Met some but not all expectations</label>
+            </value>
+            <value>
+                <fullName>Fully met expectations</fullName>
+                <default>false</default>
+                <label>Fully met expectations</label>
+            </value>
+            <value>
+                <fullName>Exceeded expectations</fullName>
+                <default>false</default>
+                <label>Exceeded expectations</label>
+            </value>
+            <value>
+                <fullName>Significantly exceeded expectations</fullName>
+                <default>false</default>
+                <label>Significantly exceeded expectations</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

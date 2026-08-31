@@ -1,0 +1,137 @@
+<template>
+    <article class="slds-card">
+        <!-- Card Header with Gray Background -->
+        <div class="slds-card__header slds-grid slds-has-divider_bottom-space">
+            <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                <div class="slds-media__figure">
+                    <span class="slds-icon_container slds-icon-standard-file">
+                        <lightning-icon icon-name="custom:custom63" size="small"></lightning-icon>
+                    </span>
+                </div>
+                <div class="slds-media__body">
+                    <h2 class="slds-card__header-title">
+                        <span class="slds-truncate">Soaritude SharePoint Sync</span>
+                    </h2>
+                </div>
+            </header>
+        </div>
+
+        <!-- Loading Spinner -->
+        <template if:true={isLoading}>
+            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+        </template>
+
+        <!-- Card Body -->
+        <div class="slds-card__body slds-card__body_inner">
+            <!-- Folder Selection and Sync Button -->
+            <div class="slds-grid slds-gutters slds-m-bottom_medium slds-grid_vertical-align-end">
+                <!-- Show dropdown when NOT object-specific -->
+                <template if:true={showFolderDropdown}>
+                    <div class="slds-col slds-has-flexi-truncate">
+                        <lightning-combobox
+                            name="folderSelect"
+                            label="SharePoint Folder"
+                            value={selectedFolder}
+                            placeholder="Select a folder"
+                            options={folders}
+                            onchange={handleFolderChange}
+                            disabled={isLoading}
+                            class="folder-combobox"
+                        ></lightning-combobox>
+                    </div>
+                </template>
+                
+                <!-- Show folder name when object-specific -->
+                <template if:true={showFolderName}>
+                    <div class="slds-col slds-has-flexi-truncate">
+                        <div class="slds-form-element">
+                            <label class="slds-form-element__label">SharePoint Folder</label>
+                            <div class="slds-form-element__control">
+                                <div class="slds-text-body_regular slds-p-top_x-small">
+                                    <lightning-icon icon-name="doctype:folder" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                                    <strong>{displayFolderName}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Warning: object-specific is on but no folder name configured -->
+                <template if:true={showMissingFolderWarning}>
+                    <div class="slds-col slds-has-flexi-truncate">
+                        <div class="slds-notify slds-notify_alert slds-theme_warning" role="alert">
+                            <lightning-icon icon-name="utility:warning" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                            <span>"Use Object-Specific Folder" is enabled but no Folder Name has been configured. Please set the Folder Name in the component properties.</span>
+                        </div>
+                    </div>
+                </template>
+                
+                <div class="slds-col slds-no-flex">
+                    <lightning-button
+                        variant="brand"
+                        label="Sync"
+                        title="Sync files to SharePoint"
+                        onclick={handleSync}
+                        disabled={isLoading}
+                        class="sync-button"
+                    ></lightning-button>
+                </div>
+            </div>
+
+            <!-- Synced Files Section -->
+            <template if:true={isInitialized}>
+                <div class="slds-m-top_medium">
+                    <!-- Section Header with Divider -->
+                    <div class="slds-border_bottom slds-p-bottom_small slds-m-bottom_small">
+                        <h3 class="slds-text-heading_small slds-text-color_weak">
+                            Synced Files
+                        </h3>
+                    </div>
+                    
+                    <template if:true={hasFiles}>
+                        <lightning-datatable
+                            key-field="Id"
+                            data={syncedFiles}
+                            columns={columns}
+                            hide-checkbox-column
+                        ></lightning-datatable>
+                    </template>
+                    
+                    <template if:false={hasFiles}>
+                        <div class="slds-text-align_center slds-p-around_large empty-state">
+                            <lightning-icon icon-name="doctype:attachment" size="large" class="slds-m-bottom_small"></lightning-icon>
+                            <p class="slds-text-body_regular slds-text-color_weak">
+                                No files synced to SharePoint yet.
+                            </p>
+                            <template if:true={selectedFolder}>
+                                <p class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">
+                                    Click "Sync" to upload files from this record.
+                                </p>
+                            </template>
+                            <template if:false={selectedFolder}>
+                                <p class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">
+                                    Select a folder and click "Sync" to get started.
+                                </p>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Error State - SharePoint Not Initialized -->
+            <template if:false={isInitialized}>
+                <template if:false={isLoading}>
+                    <div class="slds-text-align_center slds-p-around_large">
+                        <lightning-icon icon-name="utility:warning" size="large" variant="warning" class="slds-m-bottom_small"></lightning-icon>
+                        <p class="slds-text-body_regular slds-text-color_weak">
+                            SharePoint connection could not be established.
+                        </p>
+                        <p class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">
+                            Please check your configuration or try refreshing the page.
+                        </p>
+                    </div>
+                </template>
+            </template>
+        </div>
+    </article>
+</template>

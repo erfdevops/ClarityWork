@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Cant_make_Child_if_not_Related_to_DB</fullName>
+    <active>true</active>
+    <description>Won&apos;t allow users to set an Initiative Stage as child if it&apos;s not tied to a Death Benefit record</description>
+    <errorConditionFormula>AND(
+    ISPICKVAL( Initiative_Stage_Hierarchy__c , &quot;Child Stage&quot;),
+
+
+    ISBLANK(Benefit__c))</errorConditionFormula>
+    <errorMessage>An Initiative Stage record can&apos;t be set as Child Stage if not related to a Benefit record.</errorMessage>
+</ValidationRule>

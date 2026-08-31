@@ -1,0 +1,70 @@
+<template>
+    <div class="general-container">
+        <div class="comment-section">
+            <template lwc:if={commentsList}>
+                <template for:each={commentsList} for:item="userComment">
+                    <div key={userComment.Id} class="comment-tile" onselect={handleSelect} data-id={userComment.IndexDivId}>
+                        <template lwc:if={userComment}>
+                            <!-- Comments from CURRENT user (right side) -->
+                            <template lwc:if={userComment.IsCurrentUser}>
+                                <div class="tile-container-right">
+                                    <div class="tile-comment-right">
+                                        <div class="tile-comment-time-right">{userComment.FormattedCreatedDate}</div>
+                                        <div class="tile-comment-user-right">
+                                            <div class="tile-profile-picture">
+                                                <img src={userComment.CreatedBy.SmallPhotoUrl} alt="Profile photo" class="profile-photo" />
+                                            </div>
+                                            <div class="tile-profile-name">{userComment.CreatedBy.Name}</div>
+                                        </div>
+                                    </div>
+                                    <div class="tile-comment-text text-background-right">
+                                        <lightning-formatted-rich-text class="" value={userComment.Body}>
+                                        </lightning-formatted-rich-text>
+                                    </div>
+                                </div>
+                            </template>
+                            
+                            <!-- Comments from OTHER users (left side) -->
+                            <template lwc:else>
+                                <div class="tile-container-left">
+                                    <div class="tile-comment-left">
+                                        <div class="tile-comment-user-left">
+                                            <div class="tile-profile-picture">
+                                                <img src={userComment.CreatedBy.SmallPhotoUrl} alt="Profile photo" class="profile-photo" />
+                                            </div>
+                                            <div class="tile-profile-name">{userComment.CreatedBy.Name}</div>
+                                        </div>
+                                        <div class="tile-comment-time-left">{userComment.FormattedCreatedDate}</div>
+                                    </div>
+                                    <div class="tile-comment-text text-background-left">
+                                        <lightning-formatted-rich-text class="" value={userComment.Body}>
+                                        </lightning-formatted-rich-text>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                        <template if:false={userComment}>
+                            <p>No contact data available.</p>
+                        </template> 
+                    </div>
+                </template>
+            </template>
+        </div>
+        <div class="comment-input">
+            <input type="text" name="callName" class="form-input-text" id="lookupInput" placeholder="Type a comment here" value={commentBody} onchange={handleChange} >
+            <div class="comment-button"  onclick={handlePostFeed}>
+                <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="36" height="36" rx="6" fill="#004E14"/>
+                    <g clip-path="url(#clip0_4193_29842)">
+                        <path d="M25.1472 16.4812L12.4222 10.3235C11.584 9.91729 10.5752 10.2675 10.1689 11.1057C10.0664 11.317 10.0093 11.5475 10.001 11.7822C9.99281 12.017 10.0337 12.2508 10.1211 12.4689L12.109 17.4369H26C25.9276 17.2294 25.815 17.0382 25.6687 16.8742C25.5224 16.7102 25.3451 16.5766 25.1472 16.4812ZM12.109 18.5612L10.1211 23.5304C9.77619 24.3979 10.1998 25.3809 11.0674 25.7258C11.2638 25.804 11.4732 25.8445 11.6846 25.8455C11.94 25.8455 12.1921 25.7878 12.4221 25.6768L25.1472 19.5169C25.3451 19.4215 25.5223 19.2879 25.6687 19.1239C25.815 18.9599 25.9276 18.7687 26 18.5612H12.109Z" fill="white"/>
+                    </g>
+                    <defs>
+                        <clipPath id="clip0_4193_29842">
+                            <rect width="16" height="16" fill="white" transform="translate(10 10)"/>
+                        </clipPath>
+                    </defs>
+                </svg>    
+            </div>
+        </div>
+    </div>
+</template>

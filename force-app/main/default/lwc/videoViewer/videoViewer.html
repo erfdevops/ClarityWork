@@ -1,0 +1,86 @@
+<template>
+    <div class="video-container" style={containerStyle}>
+        <!-- Loading State -->
+        <template if:true={isLoading}>
+            <div class="slds-spinner_container" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                <div role="status" class="slds-spinner slds-spinner_medium">
+                    <span class="slds-assistive-text">Loading video...</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Error State -->
+        <template if:true={error}>
+            <template if:false={isLoading}>
+                <div class="slds-illustration slds-illustration_small" style="text-align: center; padding: 3rem;">
+                    <div style="margin-bottom: 1rem;">
+                        <lightning-icon icon-name="utility:video" size="large" variant="bare" style="color: #dddbda;"></lightning-icon>
+                    </div>
+                    <div class="slds-text-longform">
+                        <h3 class="slds-text-heading_small" style="color: #706e6b; margin-bottom: 0.5rem;">Video Error</h3>
+                        <p class="slds-text-body_regular" style="color: #706e6b;">{error}</p>
+                    </div>
+                </div>
+            </template>
+        </template>
+        
+        <!-- No Video State -->
+        <template if:false={videoUrl}>
+            <template if:false={isLoading}>
+                <template if:false={error}>
+                    <div class="slds-illustration slds-illustration_small" style="text-align: center; padding: 3rem;">
+                        <div style="margin-bottom: 1rem;">
+                            <lightning-icon icon-name="utility:video" size="large" variant="bare" style="color: #dddbda;"></lightning-icon>
+                        </div>
+                        <div class="slds-text-longform">
+                            <h3 class="slds-text-heading_small" style="color: #706e6b; margin-bottom: 0.5rem;">No Video Available</h3>
+                            <p class="slds-text-body_regular" style="color: #706e6b;">No video file has been uploaded for this lesson.</p>
+                        </div>
+                    </div>
+                </template>
+            </template>
+        </template>
+        
+        <!-- Video Player -->
+        <template if:true={videoUrl}>
+            <!-- Video Controls -->
+            <div class="video-controls slds-p-horizontal_small slds-p-vertical_x-small" 
+                 style="background: #f3f2f2; border: 1px solid #d9dbdd; border-bottom: none; border-radius: 4px 4px 0 0; display: flex; align-items: center; justify-content: space-between;">
+                <div class="video-info">
+                    <span class="slds-text-body_small slds-text-color_weak">{fileName}</span>
+                </div>
+                <div class="video-actions">
+                    <lightning-button-icon 
+                        icon-name="utility:download"
+                        alternative-text="Download Video"
+                        title="Download Video"
+                        variant="border-filled"
+                        size="small"
+                        onclick={handleDownload}>
+                    </lightning-button-icon>
+                    <lightning-button-icon 
+                        icon-name="utility:new_window"
+                        alternative-text="Open in new window"
+                        title="Open in new window"
+                        variant="border-filled"
+                        size="small"
+                        onclick={handleOpenNewWindow}
+                        class="slds-m-left_x-small">
+                    </lightning-button-icon>
+                </div>
+            </div>
+            
+            <!-- HTML5 Video Player -->
+            <video 
+                src={videoUrl}
+                style={videoStyle}
+                controls
+                preload="metadata"
+                title="Lesson Video">
+                Your browser does not support the video tag.
+            </video>
+        </template>
+    </div>
+</template>

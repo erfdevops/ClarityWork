@@ -1,0 +1,103 @@
+<template>
+    <div class="timeline-container">
+        <div class="timeline-header">
+            <h2 class="timeline-card-title">{journeyLabel}</h2>
+            <div class="timeline-header-content">
+                <select 
+                    class="journey-selector"
+                    onchange={handleJourneyChange}>
+                    <option value="">Select Journey</option>
+                    <template for:each={journeyOptions} for:item="option">
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                    </template>
+                </select>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <template if:true={isLoading}>
+            <div class="slds-align_absolute-center slds-m-around_large">
+                <lightning-spinner alternative-text="Loading timeline..." size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- Error State -->
+        <template if:true={error}>
+            <div class="slds-box slds-theme_error slds-m-around_medium">
+                <p>Error loading timeline: {error.body.message}</p>
+            </div>
+        </template>
+
+        <!-- Empty State -->
+        <template if:true={isEmpty}>
+            <div class="empty-state-container">
+                <img src={emptyStateImageUrl} alt="No data found" class="empty-state-image">
+                <h3 class="empty-state-title">No Timeline Data</h3>
+                <p class="empty-state-message">{emptyStateMessage}</p>
+            </div>
+        </template>
+
+        <!-- Timeline Content -->
+        <template if:false={isLoading}>
+            <template if:false={error}>
+                <template if:false={isEmpty}>
+                    <div class="timeline-content">
+                        <template for:each={processedJourneyData} for:item="module">
+                            <div key={module.id} class="week-container">
+                                <!-- Module Header -->
+                                <div class="week-header" data-week-id={module.id} onclick={handleWeekToggle}>
+                                    <div class="week-header-content">
+                                        <lightning-icon
+                                            icon-name={module.chevronIcon}
+                                            size="small"
+                                            class="chevron-icon">
+                                        </lightning-icon>
+                                        <span class="week-title">
+                                            {module.title}
+                                            <template if:true={module.hasSubtitle}>
+                                                <span class="week-subtitle">: {module.subtitle}</span>
+                                            </template>
+                                        </span>
+                                    </div>
+                                    <lightning-icon icon-name="utility:threedots_vertical" size="x-small" class="menu-icon"></lightning-icon>
+                                </div>
+
+                                <!-- Module Content -->
+                                <template if:true={module.isExpanded}>
+                                    <div class="week-content">
+                                        <template for:each={module.items} for:item="item">
+                                            <div key={item.id} class="timeline-item clickable-timeline-item"
+                                                 onclick={handleTimelineItemClick}
+                                                 data-item-id={item.id}
+                                                 data-lesson-id={item.lessonId}
+                                                 data-course-id={item.courseId}
+                                                 data-module-id={item.moduleId}
+                                                 data-enrollment-id={item.enrollmentId}
+                                                 data-module-assignment-id={item.moduleAssignmentId}>
+                                                <div class="item-status">
+                                                    <lightning-icon
+                                                        icon-name={item.completionIcon}
+                                                        size="small"
+                                                        class={item.completionClass}>
+                                                    </lightning-icon>
+                                                </div>
+                                                <div class="item-content">
+                                                    <div class="item-date">{item.dueDate}</div>
+                                                    <div class="item-title">{item.title}</div>
+                                                    <div class="item-subtitle">{item.subtitle}</div>
+                                                </div>
+                                                <template if:true={item.pointsDisplay}>
+                                                    <div class="item-points">{item.pointsDisplay}</div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </template>
+        </template>
+    </div>
+</template>

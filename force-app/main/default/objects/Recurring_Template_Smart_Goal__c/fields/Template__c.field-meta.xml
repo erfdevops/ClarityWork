@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Template__c</fullName>
+    <label>Template</label>
+    <type>Lookup</type>
+    <referenceTo>Recurring_Task_Template__c</referenceTo>
+    <relationshipLabel>Template Smart Goals</relationshipLabel>
+    <relationshipName>Template_Smart_Goals</relationshipName>
+    <deleteConstraint>SetNull</deleteConstraint>
+</CustomField>

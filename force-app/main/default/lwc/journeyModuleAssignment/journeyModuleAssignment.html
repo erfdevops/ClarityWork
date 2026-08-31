@@ -1,0 +1,133 @@
+<template>
+    <lightning-card title={cardTitle} icon-name="standard:education">
+
+        <div class="slds-card__body slds-card__body_inner">
+
+            <!-- Loading -->
+            <template if:true={isLoading}>
+                <div class="slds-align_absolute-center slds-p-around_large">
+                    <lightning-spinner alternative-text="Loading modules..." size="medium"></lightning-spinner>
+                </div>
+            </template>
+
+            <!-- Error -->
+            <template if:true={hasError}>
+                <div class="slds-scoped-notification slds-media slds-media_center slds-theme_error" role="status">
+                    <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center">
+                        <lightning-icon icon-name="utility:error" variant="inverse" size="small"></lightning-icon>
+                    </div>
+                    <div class="slds-media__body">
+                        <p>{errorMessage}</p>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Content -->
+            <template if:false={isLoading}>
+                <template if:false={hasError}>
+
+                    <!-- Search Bar -->
+                    <div class="slds-m-bottom_small">
+                        <lightning-input
+                            type="search"
+                            label="Search modules"
+                            variant="label-hidden"
+                            placeholder="Search by code or name..."
+                            onchange={handleSearch}>
+                        </lightning-input>
+                    </div>
+
+                    <!-- Data Table -->
+                    <template if:true={hasModules}>
+                        <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered slds-table_fixed-layout">
+                            <thead>
+                                <tr class="slds-line-height_reset">
+                                    <th scope="col" class="slds-cell-shrink">
+                                        <span class="slds-assistive-text">Select</span>
+                                    </th>
+                                    <th scope="col" class={nameColClass} data-field="name" onclick={handleSortColumn} style="width:30%">
+                                        <a class="slds-th__action slds-text-link_reset" role="button" tabindex="-1">
+                                            <span class="slds-truncate" title="Code">Code</span>
+                                            <lightning-icon icon-name={nameSortIcon} size="xx-small" class="slds-m-left_xx-small"></lightning-icon>
+                                        </a>
+                                    </th>
+                                    <th scope="col" class={moduleNameColClass} data-field="moduleName" onclick={handleSortColumn}>
+                                        <a class="slds-th__action slds-text-link_reset" role="button" tabindex="-1">
+                                            <span class="slds-truncate" title="Module Name">Module Name</span>
+                                            <lightning-icon icon-name={moduleNameSortIcon} size="xx-small" class="slds-m-left_xx-small"></lightning-icon>
+                                        </a>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={paginatedModules} for:item="module">
+                                    <tr key={module.id} class={module.rowClass}>
+                                        <td class="slds-cell-shrink" data-label="Select">
+                                            <lightning-input
+                                                type="checkbox"
+                                                label="Select"
+                                                variant="label-hidden"
+                                                checked={module.isSelected}
+                                                disabled={module.isAssigned}
+                                                data-id={module.id}
+                                                onchange={handleCheckboxChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td data-label="Code">
+                                            <div class="slds-truncate" title={module.name}>{module.name}</div>
+                                        </td>
+                                        <td data-label="Module Name">
+                                            <div class="slds-truncate" title={module.moduleName}>{module.moduleName}</div>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+
+                        <!-- Pagination Controls -->
+                        <div class="slds-grid slds-grid_align-spread slds-m-top_small slds-m-bottom_small">
+                            <lightning-button
+                                label="Previous"
+                                icon-name="utility:chevronleft"
+                                disabled={isPrevDisabled}
+                                onclick={handlePrevPage}>
+                            </lightning-button>
+                            <span class="slds-align-middle slds-text-body_small slds-text-color_weak">{pageInfo}</span>
+                            <lightning-button
+                                label="Next"
+                                icon-name="utility:chevronright"
+                                icon-position="right"
+                                disabled={isNextDisabled}
+                                onclick={handleNextPage}>
+                            </lightning-button>
+                        </div>
+                    </template>
+
+                    <!-- Empty state -->
+                    <template if:false={hasModules}>
+                        <div class="slds-align_absolute-center slds-p-around_medium">
+                            <p class="slds-text-body_regular slds-text-color_weak">No published modules match your search.</p>
+                        </div>
+                    </template>
+
+                    <!-- Create Assignments Action -->
+                    <template if:true={hasSelection}>
+                        <div class="slds-grid slds-grid_align-spread slds-m-top_medium">
+                            <span class="slds-align-middle slds-text-body_small">
+                                {selectedCount} module(s) selected
+                            </span>
+                            <lightning-button
+                                label="Create Module Assignments"
+                                variant="brand"
+                                disabled={isSaving}
+                                onclick={handleCreateAssignments}>
+                            </lightning-button>
+                        </div>
+                    </template>
+
+                </template>
+            </template>
+
+        </div>
+    </lightning-card>
+</template>

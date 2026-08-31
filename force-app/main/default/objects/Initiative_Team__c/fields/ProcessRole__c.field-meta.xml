@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ProcessRole__c</fullName>
+    <label>Process Role</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Death Notice Process Owner</fullName>
+                <default>false</default>
+                <label>Death Notice Process Owner</label>
+            </value>
+            <value>
+                <fullName>Survivor Payments - Post-Ret Death (Benefits) Process Owner</fullName>
+                <default>false</default>
+                <label>Survivor Payments - Post-Ret Death (Benefits) Process Owner</label>
+            </value>
+            <value>
+                <fullName>Survivor Payments - Post-Ret Death (Accounting) Process Owner</fullName>
+                <default>false</default>
+                <label>Survivor Payments - Post-Ret Death (Accounting) Process Owner</label>
+            </value>
+            <value>
+                <fullName>Survivor Payments - Pre-Ret Death (Benefits) Process Owner</fullName>
+                <default>false</default>
+                <label>Survivor Payments - Pre-Ret Death (Benefits) Process Owner</label>
+            </value>
+            <value>
+                <fullName>Survivor Payments - Pre-Ret Death (Accounting) Process Owner</fullName>
+                <default>false</default>
+                <label>Survivor Payments - Pre-Ret Death (Accounting) Process Owner</label>
+            </value>
+            <value>
+                <fullName>Estate Payments - Post-Ret Death (Benefits) Process Owner</fullName>
+                <default>false</default>
+                <label>Estate Payments - Post-Ret Death (Benefits) Process Owner</label>
+            </value>
+            <value>
+                <fullName>Estate Payments - Post-Ret Death (Accounting) Process Owner</fullName>
+                <default>false</default>
+                <label>Estate Payments - Post-Ret Death (Accounting) Process Owner</label>
+            </value>
+            <value>
+                <fullName>Estate Payments - Pre-Ret Death (Benefits) Process Owner</fullName>
+                <default>false</default>
+                <label>Estate Payments - Pre-Ret Death (Benefits) Process Owner</label>
+            </value>
+            <value>
+                <fullName>Estate Payments - Pre-Ret Death (Accounting) Process Owner</fullName>
+                <default>false</default>
+                <label>Estate Payments - Pre-Ret Death (Accounting) Process Owner</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

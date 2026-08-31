@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <defaultLandingTab>Task_Management_Home</defaultLandingTab>
+    <description>Task management application for monthly task tracking and CSV reporting.</description>
+    <formFactors>Small</formFactors>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
+    <label>Clarity Work</label>
+    <navType>Standard</navType>
+    <tabs>Task_Management_Home</tabs>
+    <tabs>Project__c</tabs>
+    <tabs>standard-Task</tabs>
+    <uiType>Lightning</uiType>
+</CustomApplication>

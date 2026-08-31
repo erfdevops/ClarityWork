@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Parent_Business_Pillar__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>Represents the Business Pillar record that this new business pillar record was cloned from.</description>
+    <label>Parent Business Pillar</label>
+    <referenceTo>Business_Pillar__c</referenceTo>
+    <relationshipLabel>Clone Business Pillars</relationshipLabel>
+    <relationshipName>Business_Pillars</relationshipName>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

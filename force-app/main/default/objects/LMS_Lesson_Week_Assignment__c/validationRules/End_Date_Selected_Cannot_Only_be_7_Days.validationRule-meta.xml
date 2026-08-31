@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>End_Date_Selected_Cannot_Only_be_7_Days</fullName>
+    <active>true</active>
+    <errorConditionFormula>$ObjectType.LMS_Lesson_Week_Assignment__c.Fields.End_Date__c  = 7</errorConditionFormula>
+    <errorDisplayField>End_Date__c</errorDisplayField>
+    <errorMessage>End_Date_Selected_Cannot_be_&gt;_7_Days</errorMessage>
+</ValidationRule>

@@ -1,0 +1,776 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>65.0</apiVersion>
+    <assignments>
+        <name>Add_SLA_Achievement_to_Variable</name>
+        <label>Add SLA Achievement % to Variable</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>vSumOfPercentages</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>vSLAAchievement</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>vCountOfSLAStages</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <numberValue>1.0</numberValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_Stages_to_set_Counts</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Add_SLA_Achievement_to_Variable_2</name>
+        <label>Add SLA Achievement to Variable 2</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>vSumOfPercentages</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>vSLAAchievement</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>vCountOfSLAStages</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <numberValue>1.0</numberValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_Stages</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Add_to_Count_of_Completed_Stages</name>
+        <label>Add to Count of Completed Stages</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>vCountOfCompleted</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <numberValue>1.0</numberValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Is_SLA_or_Approval_Based</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Add_to_Count_of_Open_Stages</name>
+        <label>Add to Count of Open Stages</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>vOpenCount</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <numberValue>1.0</numberValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Is_SLA_or_Approval_Based</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Divide_Sum_of_Percentages_by_Quantity_of_Stages</name>
+        <label>Divide Sum of Percentages by Quantity of Stages</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>vCurrentAccuracyLevel</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>fCurrentAccuracyLevel</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Update_Parent_Initiative_Stage_Record_Count_Fields</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Divide_Sum_of_Percentages_by_Quantity_of_Stages_2</name>
+        <label>Divide Sum of Percentages by Quantity of Stages 2</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>vCurrentAccuracyLevel</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>fCurrentAccuracyLevel</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Update_Parent_Initiative_Stage_Record_Count_Fields_2</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Set_All_Stages_Count</name>
+        <label>Set All Stages Count</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>vAllChildStagesCount</assignToReference>
+            <operator>AssignCount</operator>
+            <value>
+                <elementReference>Get_Child_Stages_to_Count</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_Stages_to_set_Counts</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Set_All_Stages_Count_2025_2026</name>
+        <label>Set All Stages Count 2025-2026</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>vAllChildStagesCount</assignToReference>
+            <operator>AssignCount</operator>
+            <value>
+                <elementReference>Get_Child_Stages_2025_2026</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_Stages</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Store_Accuracy_in_Variable</name>
+        <label>Store Accuracy % in Variable</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>vSumOfPercentages</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>Loop_Stages_to_set_Counts.Accuracy_Level__c</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>vCountOfApprovalBasedStages</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <numberValue>1.0</numberValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_Stages_to_set_Counts</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Store_Accuracy_in_Variable_2</name>
+        <label>Store Accuracy % in Variable 2</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>vSumOfPercentages</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>Loop_Stages.Accuracy_Level__c</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>vCountOfApprovalBasedStages</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <numberValue>1.0</numberValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_Stages</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Store_SLA_Achievement_in_Variable</name>
+        <label>Store SLA Achievement in Variable</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>vSLAAchievement</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>fSLAAchievement</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Add_SLA_Achievement_to_Variable</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Store_SLA_Achievement_in_Variable_2</name>
+        <label>Store SLA Achievement in Variable 2</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>vSLAAchievement</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>fSLAAchievement2</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Add_SLA_Achievement_to_Variable_2</targetReference>
+        </connector>
+    </assignments>
+    <decisions>
+        <name>Is_2025_2026_Fiscal_Year</name>
+        <label>Is 2025-2026 Fiscal Year?</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Get_Child_Stages_to_Count</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Yes_it_s_that_Fiscal_Year</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>soParentInitiativeRecord.Fiscal_Year__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>October 2025 - September 2026</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Get_Child_Stages_2025_2026</targetReference>
+            </connector>
+            <label>Yes it&apos;s that Fiscal Year</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Is_SLA_or_Approval_Based</name>
+        <label>Is SLA or Approval Based?</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Loop_Stages_to_set_Counts</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>SLA_Based</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Loop_Stages_to_set_Counts.Smart_Goal_in_Days__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>Loop_Stages_to_set_Counts.Requires_Approval__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Store_SLA_Achievement_in_Variable</targetReference>
+            </connector>
+            <label>SLA Based</label>
+        </rules>
+        <rules>
+            <name>Approval_Based</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Loop_Stages_to_set_Counts.Requires_Approval__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>Loop_Stages_to_set_Counts.Smart_Goal_in_Days__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Store_Accuracy_in_Variable</targetReference>
+            </connector>
+            <label>Approval Based</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Is_SLA_or_Approval_Based2</name>
+        <label>Is SLA or Approval Based?</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Loop_Stages</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>SLA_Based_2</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Loop_Stages.Smart_Goal_in_Days__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>Loop_Stages.Requires_Approval__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Store_SLA_Achievement_in_Variable_2</targetReference>
+            </connector>
+            <label>SLA Based 2</label>
+        </rules>
+        <rules>
+            <name>Approval_Based2</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Loop_Stages.Requires_Approval__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>Loop_Stages.Smart_Goal_in_Days__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Store_Accuracy_in_Variable_2</targetReference>
+            </connector>
+            <label>Approval Based 2</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Status_Checker</name>
+        <label>Status Checker</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Is_SLA_or_Approval_Based</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Open</name>
+            <conditionLogic>or</conditionLogic>
+            <conditions>
+                <leftValueReference>Loop_Stages_to_set_Counts.Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>On Hold</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>Loop_Stages_to_set_Counts.Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Not Started</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>Loop_Stages_to_set_Counts.Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>In Progress</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>Loop_Stages_to_set_Counts.Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Behind</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Add_to_Count_of_Open_Stages</targetReference>
+            </connector>
+            <label>Open</label>
+        </rules>
+        <rules>
+            <name>Completed</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Loop_Stages_to_set_Counts.Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Completed</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Add_to_Count_of_Completed_Stages</targetReference>
+            </connector>
+            <label>Completed</label>
+        </rules>
+    </decisions>
+    <environments>Default</environments>
+    <formulas>
+        <name>fCurrentAccuracyLevel</name>
+        <dataType>Number</dataType>
+        <expression>{!vSumOfPercentages}/{!vAllChildStagesCount}*100</expression>
+        <scale>2</scale>
+    </formulas>
+    <formulas>
+        <name>fSLAAchievement</name>
+        <dataType>Number</dataType>
+        <expression>IF(
+AND(
+NOT(ISBLANK({!Loop_Stages_to_set_Counts.Smart_Goal_in_Days__c} )),
+{!Loop_Stages_to_set_Counts.Requires_Approval__c} = FALSE),
+IF(
+{!Loop_Stages_to_set_Counts.Smart_Goal_in_Days__c} &lt;= 0,
+NULL,
+MIN(
+1,
+MAX(
+0.6,
+IF(
+BLANKVALUE({!Loop_Stages_to_set_Counts.Business_Days_Since_Start_Date__c}, 0) &lt;= 0,
+1, /* same-day or not started → 100% */
+{!Loop_Stages_to_set_Counts.Smart_Goal_in_Days__c} / {!Loop_Stages_to_set_Counts.Business_Days_Since_Start_Date__c}
+)
+)
+)
+)
+,NULL)</expression>
+        <scale>2</scale>
+    </formulas>
+    <formulas>
+        <name>fSLAAchievement2</name>
+        <dataType>Number</dataType>
+        <expression>IF(
+AND(
+NOT(ISBLANK({!Loop_Stages.Smart_Goal_in_Days__c} )),
+{!Loop_Stages.Requires_Approval__c} = FALSE),
+IF(
+{!Loop_Stages.Smart_Goal_in_Days__c} &lt;= 0,
+NULL,
+MIN(
+1,
+MAX(
+0.6,
+IF(
+BLANKVALUE({!Loop_Stages.Business_Days_Since_Start_Date__c}, 0) &lt;= 0,
+1, /* same-day or not started → 100% */
+{!Loop_Stages.Smart_Goal_in_Days__c} / {!Loop_Stages.Business_Days_Since_Start_Date__c}
+)
+)
+)
+)
+,NULL)</expression>
+        <scale>2</scale>
+    </formulas>
+    <interviewLabel>Child Initiative Rollups {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Child Initiative Rollups</label>
+    <loops>
+        <name>Loop_Stages</name>
+        <label>Loop Stages</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <collectionReference>Get_Child_Stages_2025_2026</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Is_SLA_or_Approval_Based2</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Divide_Sum_of_Percentages_by_Quantity_of_Stages_2</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <loops>
+        <name>Loop_Stages_to_set_Counts</name>
+        <label>Loop Stages to set Counts</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <collectionReference>Get_Child_Stages_to_Count</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Status_Checker</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Divide_Sum_of_Percentages_by_Quantity_of_Stages</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordLookups>
+        <name>Get_Child_Stages_2025_2026</name>
+        <label>Get Child Stages 2025-2026</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Set_All_Stages_Count_2025_2026</targetReference>
+        </connector>
+        <filterLogic>1 AND (2 OR 3 OR 4 OR 5 OR 6 OR 7 OR 8 OR 9 OR 10) AND 11</filterLogic>
+        <filters>
+            <field>Parent_Initiative_Stage__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>soParentInitiativeRecord.Id</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>Name</field>
+            <operator>Contains</operator>
+            <value>
+                <stringValue>Jan</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Name</field>
+            <operator>Contains</operator>
+            <value>
+                <stringValue>Feb</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Name</field>
+            <operator>Contains</operator>
+            <value>
+                <stringValue>Mar</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Name</field>
+            <operator>Contains</operator>
+            <value>
+                <stringValue>Apr</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Name</field>
+            <operator>Contains</operator>
+            <value>
+                <stringValue>May</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Name</field>
+            <operator>Contains</operator>
+            <value>
+                <stringValue>Jun</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Name</field>
+            <operator>Contains</operator>
+            <value>
+                <stringValue>Jul</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Name</field>
+            <operator>Contains</operator>
+            <value>
+                <stringValue>Aug</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Name</field>
+            <operator>Contains</operator>
+            <value>
+                <stringValue>Sep</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Status__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Completed</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>Initiative_Stage__c</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Child_Stages_to_Count</name>
+        <label>Get Child Stages to Count</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Set_All_Stages_Count</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Parent_Initiative_Stage__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>soParentInitiativeRecord.Id</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>Initiative_Stage__c</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordUpdates>
+        <name>Update_Parent_Initiative_Stage_Record_Count_Fields</name>
+        <label>Update Parent Initiative Stage Record Count Fields</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>soParentInitiativeRecord.Id</elementReference>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>Accuracy_Level__c</field>
+            <value>
+                <elementReference>vCurrentAccuracyLevel</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Count_of_Child_Stages__c</field>
+            <value>
+                <elementReference>vAllChildStagesCount</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Count_of_Completed_Child_Stages__c</field>
+            <value>
+                <elementReference>vCountOfCompleted</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Count_of_Open_Child_Stages__c</field>
+            <value>
+                <elementReference>vOpenCount</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Initiative_Stage__c</object>
+    </recordUpdates>
+    <recordUpdates>
+        <name>Update_Parent_Initiative_Stage_Record_Count_Fields_2</name>
+        <label>Update Parent Initiative Stage Record Count Fields 2</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>soParentInitiativeRecord.Id</elementReference>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>Accuracy_Level__c</field>
+            <value>
+                <elementReference>vCurrentAccuracyLevel</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Initiative_Stage__c</object>
+    </recordUpdates>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Is_2025_2026_Fiscal_Year</targetReference>
+        </connector>
+    </start>
+    <status>Draft</status>
+    <variables>
+        <name>soParentInitiativeRecord</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Initiative_Stage__c</objectType>
+    </variables>
+    <variables>
+        <name>vAllChildStagesCount</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>0</scale>
+    </variables>
+    <variables>
+        <name>vCountOfApprovalBasedStages</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>0</scale>
+    </variables>
+    <variables>
+        <name>vCountOfCompleted</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>0</scale>
+    </variables>
+    <variables>
+        <name>vCountOfSLAStages</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>0</scale>
+    </variables>
+    <variables>
+        <name>vCurrentAccuracyLevel</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>2</scale>
+    </variables>
+    <variables>
+        <name>vOpenCount</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>0</scale>
+    </variables>
+    <variables>
+        <name>vSLAAchievement</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>2</scale>
+    </variables>
+    <variables>
+        <name>vSumOfPercentages</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>true</isOutput>
+        <scale>2</scale>
+    </variables>
+</Flow>

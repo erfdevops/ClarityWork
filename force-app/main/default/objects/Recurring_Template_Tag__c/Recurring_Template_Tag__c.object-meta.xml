@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Recurring_Template_Tag__c</fullName>
+    <label>Recurring Template Tag</label>
+    <pluralLabel>Recurring Template Tags</pluralLabel>
+    <nameField>
+        <label>Recurring Template Tag Name</label>
+        <type>AutoNumber</type>
+        <displayFormat>RTT-{0000}</displayFormat>
+    </nameField>
+    <deploymentStatus>Deployed</deploymentStatus>
+    <sharingModel>ReadWrite</sharingModel>
+</CustomObject>

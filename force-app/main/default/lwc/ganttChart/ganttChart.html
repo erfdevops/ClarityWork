@@ -1,0 +1,280 @@
+<template>
+    <div class="general-container">
+        <div class="header-container">
+            <div class="header-container-left">
+                <div class="header-initiative-title">{initiative.name}</div>
+                <div class="header-initiative-status">
+                    <div class={initiative.statusCss}>{initiative.status}</div>
+                </div>
+            </div>
+            <div class="header-container-right">
+                <div class="header-item">
+                    <div class="header-item-icon">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12.9999 1.33333H2.99992C2.07944 1.33333 1.33325 2.07952 1.33325 2.99999V4.66666C1.33325 5.58714 2.07944 6.33333 2.99992 6.33333H12.9999C13.9204 6.33333 14.6666 5.58714 14.6666 4.66666V2.99999C14.6666 2.07952 13.9204 1.33333 12.9999 1.33333Z" stroke="#64748B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12.9999 9.66666H2.99992C2.07944 9.66666 1.33325 10.4128 1.33325 11.3333V13C1.33325 13.9205 2.07944 14.6667 2.99992 14.6667H12.9999C13.9204 14.6667 14.6666 13.9205 14.6666 13V11.3333C14.6666 10.4128 13.9204 9.66666 12.9999 9.66666Z" stroke="#64748B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="header-item-text">
+                        List
+                    </div>
+                </div>
+                <div class="header-item">
+                    <div class="header-item-icon">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4.66659 1.33333H2.99992C2.07944 1.33333 1.33325 2.07952 1.33325 2.99999V13C1.33325 13.9205 2.07944 14.6667 2.99992 14.6667H4.66659C5.58706 14.6667 6.33325 13.9205 6.33325 13V2.99999C6.33325 2.07952 5.58706 1.33333 4.66659 1.33333Z" stroke="#64748B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12.9998 1.33333H11.3332C10.4127 1.33333 9.6665 2.07952 9.6665 2.99999V8C9.6665 8.92047 10.4127 9.66666 11.3332 9.66666H12.9998C13.9203 9.66666 14.6665 8.92047 14.6665 8V2.99999C14.6665 2.07952 13.9203 1.33333 12.9998 1.33333Z" stroke="#64748B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="header-item-text">
+                        Board
+                    </div>
+                </div>
+                <div class="header-item">
+                    <div class="header-item-icon">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1.33325 11.3333L1.33325 13C1.33325 13.9205 2.07944 14.6667 2.99992 14.6667L12.9999 14.6667C13.9204 14.6667 14.6666 13.9205 14.6666 13L14.6666 11.3333C14.6666 10.4129 13.9204 9.66667 12.9999 9.66667L2.99992 9.66667C2.07944 9.66667 1.33325 10.4129 1.33325 11.3333Z" stroke="#64748B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M1.33325 3.00001L1.33325 4.66668C1.33325 5.58715 2.07944 6.33334 2.99992 6.33334L7.99992 6.33334C8.92039 6.33334 9.66659 5.58715 9.66659 4.66668L9.66659 3.00001C9.66659 2.07954 8.92039 1.33334 7.99992 1.33334L2.99992 1.33334C2.07944 1.33334 1.33325 2.07954 1.33325 3.00001Z" stroke="#64748B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="header-item-text">
+                        Gantt
+                    </div>
+                </div>
+                <div class="header-item">
+                    <div class="header-item-icon">
+                        <svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12.2383 2.25H11.5V0.738281H9.98828V2.25H4.01172V0.738281H2.5V2.25H1.76172C0.917969 2.25 0.25 2.91797 0.25 3.76172V14.2383C0.25 15.082 0.917969 15.75 1.76172 15.75H12.2383C13.082 15.75 13.75 15.082 13.75 14.2383V3.76172C13.75 2.91797 13.082 2.25 12.2383 2.25ZM12.2383 14.2383H1.76172V6.75H12.2383V14.2383ZM1.76172 5.23828V3.76172H12.2383V5.23828H1.76172ZM3.23828 8.26172H10.7617V9.73828H3.23828V8.26172ZM3.23828 11.25H8.51172V12.7617H3.23828V11.25Z" fill="#8083A3"/>
+                        </svg>
+                    </div>
+                    <div class="header-item-text">
+                        Monthly
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="body-container">
+            <div class="body-container-left">
+                <table>
+                    <tr>
+                        <th>
+                            <div class="cell-wrapper-large">
+                                <div class="table-row-label-large">
+                                    <div class="cell-wrapper-contributor">
+                                        Stages and Tasks
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="cell-wrapper-small">
+                                <div class="table-row-label">Status</div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="cell-wrapper-percentage">
+                                <div class="table-row-label-percentage">Completion Percentage</div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="cell-wrapper-small">
+                                <div class="table-row-label">Start Date</div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="cell-wrapper-small">
+                                <div class="table-row-label">End Date</div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="cell-wrapper-small">
+                                <div class="table-row-label">Ownership</div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="cell-wrapper-end">
+                                <div class="table-row-label-end">SMART Goal Achievement</div>
+                            </div>
+                        </th>
+                    </tr>
+                    <template for:each={stages} for:item="stage">
+                        <tr key={stage.id}>
+                            <td>
+                                <div class="cell-wrapper-large">
+                                    <div class="table-row-stage">
+                                        <div class="stage-icon" data-id={stage.id} onclick={toggleTasks}>
+                                            <svg width="12" height="6" viewBox="0 0 12 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M0 0L6 6L12 0" fill="#616161"/>
+                                            </svg>
+                                        </div>
+                                        <div class="stage-title" data-recordid={stage.id} data-recordname={stage.name} data-recordtype="stage" onclick={openRecordViewInSubTab}>
+                                            {stage.name}
+                                        </div>
+                                        <template if:true={isRecordInitiative}>
+                                            <div class="stage-button-add-task" data-stageid={stage.id} data-startdate={stage.start_date} data-enddate={stage.end_date} onclick={addNewTask}>
+                                                + Add Task
+                                            </div>
+                                        </template>
+                                        <c-gantt-chart-modal-new-task></c-gantt-chart-modal-new-task>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-wrapper-small">
+                                    <div class="table-row-stage-status">
+                                        <div class={stage.statusCss}>{stage.status}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-wrapper-percentage">
+                                    <div class="table-row-stage-text-percentage">{stage.completion_percentage}%</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-wrapper-small">
+                                    <div class="table-row-stage-text">{stage.start_date}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-wrapper-small">
+                                    <div class="table-row-stage-text">{stage.end_date}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-wrapper-small">
+                                    <div class="table-row-stage-text">{stage.ownership}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-wrapper-end">
+                                    <div class="table-row-stage-text-end">{stage.smart_goal_achievement}</div>
+                                </div>
+                            </td>
+                        </tr>
+                        <template if:false={stage.toggleTasks}>
+                            <template for:each={stage.tasks} for:item="task">
+                                <tr key={task.id} class="table-tr-task">
+                                    <td>
+                                        <div class="cell-wrapper-large">
+                                            <div class="table-row-task">
+                                                <div class="checkbox-wrapper">
+                                                    <input type="checkbox" name={task.id} checked={task.checked} class="input-check-task">
+                                                </div>
+                                                <div class="task-wrapper" data-recordid={task.id} data-recordname={task.name} data-recordtype="task" onclick={openRecordViewInSubTab}>
+                                                    {task.name}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="cell-wrapper-small">
+                                            <div class="table-row-task-status">
+                                                <div class={task.statusCss}>{task.status}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="cell-wrapper-percentage">
+                                            <div class="table-row-percentage">{task.completion_percentage}%</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="cell-wrapper-small">
+                                            <div class="table-row-text">{task.start_date}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="cell-wrapper-small">
+                                            <div class="table-row-text">{task.end_date}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="cell-wrapper-small">
+                                            <div class="table-row-text">{task.ownership}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="cell-wrapper-end">
+                                            <div class="table-row-text">{task.action}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </template>
+                    </template>
+                </table>
+            </div>
+            <div class="body-container-right">
+                <template if:true={daysAmount}>
+                    <table>
+                        <thead>
+                            <tr>
+                                <template for:each={monthsArray} for:item="month">
+                                    <th key={month.id}  colspan={month.colspan}>
+                                        <div class="column-month">
+                                            {month.name}
+                                        </div>
+                                    </th>
+                                </template>
+                            </tr>
+                            <tr class="table-tr-days">
+                                
+                                <template for:each={daysArray} for:item="day">
+                                    <td key={day.id}>
+                                        <div class="column-day">
+                                            {day.number}
+                                        </div>
+                                    </td>
+                                </template>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={stages} for:item="stage">
+                                <tr key={stage.id}>
+                                    <template for:each={stage.days} for:item="stageDay">
+                                        <td key={stageDay.key}>
+                                            <div class={stageDay.wrapperCss}>
+                                                <div class={stageDay.statusCss}>
+                                                    {stageDay.title}
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </template>
+                                </tr>
+                                <template if:false={stage.toggleTasks}>
+                                    <template for:each={stage.tasks} for:item="task">
+                                        <tr key={task.id}>
+                                            <template for:each={task.days} for:item="taskDay">
+                                                <td key={taskDay.key}>
+                                                    <div class={taskDay.wrapperCss}>
+                                                        <div class={taskDay.statusCss}>
+                                                            <template if:false={taskDay.dueDateStatus}>
+                                                                {taskDay.title}
+                                                            </template>
+                                                            <template if:true={taskDay.dueDateStatus}>
+                                                                <div class="svg-container-due-date">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="28" height="28" x="0" y="0" viewBox="0 0 128 128" style="enable-background:new 0 0 512 512" xml:space="preserve" class="">
+                                                                        <g transform="matrix(1,0,0,1,0,0)">
+                                                                            <path d="M62.594 112.389a1.755 1.755 0 0 0 1.383.708H64a1.749 1.749 0 0 0 1.377-.671c1.448-1.847 35.45-45.549 35.45-73.227a36.827 36.827 0 0 0-73.654 0c0 10.6 5.981 26.165 17.779 46.26 8.716 14.846 17.554 26.811 17.642 26.93ZM64 5.872A33.364 33.364 0 0 1 97.327 39.2c0 23.369-26.776 60.519-33.291 69.21C57.6 99.383 30.673 60.388 30.673 39.2A33.364 33.364 0 0 1 64 5.872Z" fill="#5100ff" opacity="1" data-original="#000000" class=""></path>
+                                                                            <path d="M85.17 39.2A21.17 21.17 0 1 0 64 60.369 21.193 21.193 0 0 0 85.17 39.2ZM64 56.869A17.67 17.67 0 1 1 81.67 39.2 17.69 17.69 0 0 1 64 56.869ZM81.844 101.166a1.751 1.751 0 0 0-.426 3.475c15.067 1.849 19.942 5.337 19.942 6.736 0 2.627-13.186 7.74-37.36 7.74s-37.36-5.117-37.36-7.74c0-1.5 4.781-4.569 17.613-6.425a1.751 1.751 0 0 0-.5-3.465c-9.4 1.361-20.612 4.18-20.612 9.89 0 8.247 24.435 11.24 40.86 11.24s40.86-2.993 40.86-11.24c-.001-6.426-14.421-9.155-23.017-10.211Z" fill="#5100ff" opacity="1" data-original="#000000" class=""></path>
+                                                                        </g>
+                                                                    </svg>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </template>
+                                        </tr>
+                                    </template>
+                                </template>
+                            </template>
+                        </tbody>
+                    </table>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>

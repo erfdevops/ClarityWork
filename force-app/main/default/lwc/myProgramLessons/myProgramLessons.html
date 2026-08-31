@@ -1,0 +1,93 @@
+<template>
+    <div class="lessons-panel-container">
+        <!-- Header Section -->
+        <div class="panel-header">
+            <h2 class="panel-title">{courseTitle}</h2>
+            
+            <!-- Filter Tabs -->
+            <template if:true={showLessonsFilter}>
+                <div class="filter-tabs">
+                    <button class={allTabClass} onclick={showAll}>All</button>
+                    <button class={lessonsTabClass} onclick={showLessons}>Lessons</button>
+                    <button class={assignmentsTabClass} onclick={showAssignments}>Assignments</button>
+                </div>
+            </template>
+        </div>
+
+        <!-- Table Header - Hidden for card layout -->
+        <div class="table-header" style="display: none;">
+            <div class="header-column lessons-column">LESSONS</div>
+            <div class="header-column duration-column">DURATION</div>
+            <div class="header-column points-column">POINTS</div>
+            <div class="header-column quizzes-column">QUIZZES</div>
+            <div class="header-column files-column">FILES</div>
+            <div class="header-column status-column"></div>
+        </div>
+
+        <!-- Lessons List -->
+        <div class="lessons-container">
+            <template if:true={filteredLessons.length}>
+                <template for:each={filteredLessons} for:item="lesson">
+                    <div key={lesson.id} class="lesson-row" data-id={lesson.id} onclick={handleLessonClick}>
+                        <!-- Lesson Title Column -->
+                        <div class="lesson-column lessons-column">
+                            <div class="lesson-title">{lesson.title}</div>
+                        </div>
+                        
+                        <!-- Duration Column -->
+                        <div class="lesson-column duration-column">
+                            <div class="duration-info">
+                                <lightning-icon icon-name="utility:clock" size="xx-small" class="duration-icon"></lightning-icon>
+                                <span class="duration-text">{lesson.duration}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Points Column -->
+                        <div class="lesson-column points-column">
+                            <div class="points-info">
+                                <lightning-icon icon-name="utility:moneybag" size="xx-small" class="points-icon"></lightning-icon>
+                                <span class="points-text">{lesson.points}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Quizzes Column -->
+                        <div class="lesson-column quizzes-column">
+                            <div class="quiz-info">
+                                <lightning-icon icon-name="utility:question" size="xx-small" class="quiz-icon"></lightning-icon>
+                                <span class="quiz-text">{lesson.quizzes}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Files Column -->
+                        <div class="lesson-column files-column">
+                            <div class="files-info">
+                                <lightning-icon icon-name="utility:attach" size="xx-small" class="files-icon"></lightning-icon>
+                                <span class="files-text">{lesson.files}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Status Button Column -->
+                        <div class="lesson-column status-column">
+                            <template if:true={lesson.statusCompleted}>
+                                <button class="status-button completed" data-id={lesson.id} onclick={handleStatusButtonClick}>COMPLETED</button>
+                            </template>
+                            <template if:true={lesson.statusStart}>
+                                <button class="status-button start" data-id={lesson.id} onclick={handleStatusButtonClick}>START</button>
+                            </template>
+                            <template if:true={lesson.statusContinue}>
+                                <button class="status-button continue" data-id={lesson.id} onclick={handleStatusButtonClick}>CONTINUE</button>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </template>
+            <template if:false={filteredLessons.length}>
+                <div class="empty-state-container">
+                    <img src={emptyStateImageUrl} alt="No data found" class="empty-state-image">
+                    <h3 class="empty-state-title">No Lessons Found</h3>
+                    <p class="empty-state-message">No lessons available for this filter.</p>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

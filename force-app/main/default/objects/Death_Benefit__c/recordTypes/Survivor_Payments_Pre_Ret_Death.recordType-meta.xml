@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Survivor_Payments_Pre_Ret_Death</fullName>
+    <active>true</active>
+    <label>Survivor Payments - Pre-Ret Death</label>
+    <picklistValues>
+        <picklist>Documentation_Collection_Status__c</picklist>
+        <values>
+            <fullName>Completed</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>In Progress</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Initial Email Sent</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Stalled</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Initiative_Stage__c</picklist>
+        <values>
+            <fullName>Death Notice</fullName>
+            <default>true</default>
+        </values>
+        <values>
+            <fullName>Survivor Payments - Pre-Ret Death%28Accounting%29</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Survivor Payments - Pre-Ret Death%28Benefits%29</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Method_of_Notification__c</picklist>
+        <values>
+            <fullName>Dataload from PBI</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Email</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Fax</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Phone</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Walk-In</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Status__c</picklist>
+        <values>
+            <fullName>Completed</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Deactivated</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>In Progress</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Not Started</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+</RecordType>

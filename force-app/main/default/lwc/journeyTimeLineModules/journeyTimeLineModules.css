@@ -1,0 +1,270 @@
+.timeline-container {
+    background: #ffffff;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.timeline-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #D9D9D9;
+}
+
+.timeline-card-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #3F3E3B;
+    margin: 0 0 8px 0;
+}
+
+.timeline-header-content {
+    width: 100%;
+}
+
+.journey-selector {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #D9D9D9;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #3F3E3B;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.journey-selector:hover {
+    border-color: #004e14;
+}
+
+.journey-selector:focus {
+    outline: none;
+    border-color: #004e14;
+    box-shadow: 0 0 0 3px rgba(0, 78, 20, 0.1);
+}
+
+.journey-selector option {
+    padding: 8px;
+    color: #3F3E3B;
+}
+
+.timeline-content {
+    padding: 0;
+}
+
+/* Module Containers */
+.week-container {
+    border-bottom: 1px solid #D9D9D9;
+}
+
+.week-container:last-child {
+    border-bottom: none;
+}
+
+/* Module Headers */
+.week-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    background: #ffffff;
+}
+
+.week-header:hover {
+    background: #f8f9fa;
+}
+
+.week-header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.chevron-icon {
+    color: #616161;
+    transition: transform 0.2s ease;
+}
+
+.week-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #3F3E3B;
+}
+
+.week-subtitle {
+    font-weight: 400;
+    color: #616161;
+}
+
+.menu-icon {
+    color: #D9D9D9;
+}
+
+/* Module Content */
+.week-content {
+    padding: 0 24px 16px 24px;
+    background: #ffffff;
+}
+
+/* Timeline Items */
+.timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid #D9D9D9;
+}
+
+.timeline-item:last-child {
+    border-bottom: none;
+}
+
+.item-status {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.item-status lightning-icon.completed {
+    color: #3C8154;
+    background: #d1fae5;
+    border-radius: 50%;
+    padding: 4px;
+}
+
+.item-status lightning-icon.pending {
+    color: #D9D9D9;
+    background: #f9fafb;
+    border-radius: 50%;
+    padding: 4px;
+}
+
+.item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.item-date {
+    font-size: 12px;
+    color: #616161;
+    margin-bottom: 4px;
+}
+
+.item-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #3F3E3B;
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+
+.item-subtitle {
+    font-size: 13px;
+    color: #616161;
+    line-height: 1.4;
+}
+
+.item-points {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #3C8154;
+    background: #ecfdf5;
+    padding: 4px 8px;
+    border-radius: 12px;
+    margin-top: 2px;
+}
+
+/* Clickable timeline item styles */
+.clickable-timeline-item {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 0 16px;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.clickable-timeline-item:hover {
+    background-color: #f8fafc;
+    border-color: #004e14;
+    box-shadow: 0 2px 8px rgba(0, 78, 20, 0.1);
+    transform: translateX(4px);
+}
+
+.clickable-timeline-item:active {
+    transform: translateX(2px);
+    background-color: #f1f5f9;
+}
+
+/* Empty state */
+.empty-state-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 24px;
+    text-align: center;
+}
+
+.empty-state-image {
+    width: 200px;
+    height: 200px;
+    margin-bottom: 24px;
+}
+
+.empty-state-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #3F3E3B;
+    margin: 0 0 8px 0;
+}
+
+.empty-state-message {
+    font-size: 14px;
+    color: #616161;
+    margin: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .timeline-header {
+        padding: 16px 20px;
+    }
+
+    .week-header {
+        padding: 14px 20px;
+    }
+
+    .week-content {
+        padding: 0 20px 14px 20px;
+    }
+
+    .timeline-item {
+        gap: 12px;
+        padding: 12px 0;
+    }
+
+    .item-title {
+        font-size: 13px;
+    }
+
+    .item-subtitle {
+        font-size: 12px;
+    }
+}
+
+/* Animation for expanding content */
+.week-content {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

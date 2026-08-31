@@ -1,0 +1,111 @@
+<template>
+    <template if:true={showNavBar}>
+        <div class="general-container">
+        <div class="general-subcontainer">
+            <div class="logo-container">
+                <div class="logo-image">
+                    <template if:true={imageLogoSite}>
+                        <img src={imageLogoSite} width="260"/>
+                    </template>
+                </div>
+            </div>
+            <div></div>
+            <!-- COMMENTED OUT: Icons container with information and notification icons
+            <div class="icons-container">
+                <div class="icon-information">
+                    <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.23 22C17.8589 22 22.422 17.5228 22.422 12C22.422 6.47715 17.8589 2 12.23 2C6.60118 2 2.03809 6.47715 2.03809 12C2.03809 17.5228 6.60118 22 12.23 22Z" stroke="#3F3E3B" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12.2305 16V12" stroke="#3F3E3B" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12.2305 8H12.2405" stroke="#3F3E3B" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="icon-notification">
+                    <svg width="28" height="27" viewBox="0 0 28 27" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19.428 18H6.81549C6.49444 18 6.24219 17.7525 6.24219 17.4375V8.76375C6.24219 4.86 9.32653 1.6875 13.1218 1.6875C16.917 1.6875 20.0013 4.86 20.0013 8.76375V17.4375C20.0013 17.7525 19.7491 18 19.428 18ZM7.38878 16.875H18.8547V8.76375C18.8547 5.49 16.2864 2.8125 13.1218 2.8125C9.95716 2.8125 7.38878 5.47875 7.38878 8.76375V16.875Z" fill="#3F3E3B"/>
+                        <path d="M20.5747 18H5.669C5.34795 18 5.0957 17.7525 5.0957 17.4375C5.0957 17.1225 5.34795 16.875 5.669 16.875H20.5747C20.8958 16.875 21.148 17.1225 21.148 17.4375C21.148 17.7525 20.8958 18 20.5747 18Z" fill="#3F3E3B"/>
+                        <path d="M13.1223 20.25C11.861 20.25 10.8291 19.2375 10.8291 18C10.8291 17.685 11.0814 17.4375 11.4024 17.4375C11.7234 17.4375 11.9757 17.685 11.9757 18C11.9757 18.6187 12.4917 19.125 13.1223 19.125C13.7529 19.125 14.2689 18.6187 14.2689 18C14.2689 17.685 14.5211 17.4375 14.8422 17.4375C15.1632 17.4375 15.4155 17.685 15.4155 18C15.4155 19.2375 14.3835 20.25 13.1223 20.25Z" fill="#3F3E3B"/>
+                        <path d="M13.1222 2.25C12.4916 2.25 11.9756 1.74375 11.9756 1.125C11.9756 0.50625 12.4916 0 13.1222 0C13.7528 0 14.2688 0.50625 14.2688 1.125C14.2688 1.74375 13.7528 2.25 13.1222 2.25ZM13.1222 1.125H13.6955H13.1222Z" fill="#3F3E3B"/>
+                    </svg>
+                </div>
+            </div>
+            -->
+            <!-- Consultant Section -->
+            <template if:true={consultantName}>
+                <div class="consultant-container">
+                    <div class="consultant-photo-subcontainer">
+                        <template if:true={consultantPhotoUrl}>
+                            <img src={consultantPhotoUrl} class="consultant-photo" alt="Consultant"/>
+                        </template>
+                        <template if:false={consultantPhotoUrl}>
+                            <!-- Placeholder icon when consultant has no photo -->
+                            <svg class="consultant-placeholder-icon" width="60" height="60" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="20" cy="20" r="20" fill="#E8E8E8"/>
+                                <path d="M20 18C22.21 18 24 16.21 24 14C24 11.79 22.21 10 20 10C17.79 10 16 11.79 16 14C16 16.21 17.79 18 20 18ZM20 22C17.33 22 12 23.34 12 26V30H28V26C28 23.34 22.67 22 20 22Z" fill="#757575"/>
+                            </svg>
+                        </template>
+                    </div>
+                    <div class="consultant-info">
+                        <div class="consultant-name">{consultantName}</div>
+                        <div class="consultant-title">Retire Now Consultant</div>
+                        <div class="consultant-phone">{consultantPhone}</div>
+                    </div>
+                </div>
+            </template>
+            <div class="profile-container">
+                <div class="profile-image-subcontainer">
+                    <template if:true={userPhotoUrl}>
+                        <img src={userPhotoUrl} class="profile-image"/>
+                    </template>
+                    <template if:false={userPhotoUrl}>
+                        <!-- Placeholder icon when user has no photo -->
+                        <svg class="profile-placeholder-icon" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="20" cy="20" r="20" fill="#E8E8E8"/>
+                            <path d="M20 18C22.21 18 24 16.21 24 14C24 11.79 22.21 10 20 10C17.79 10 16 11.79 16 14C16 16.21 17.79 18 20 18ZM20 22C17.33 22 12 23.34 12 26V30H28V26C28 23.34 22.67 22 20 22Z" fill="#757575"/>
+                        </svg>
+                    </template>
+                </div>
+
+                <div class="profile-name">
+                    <template if:true={userName}>
+                        {userName}
+                    </template>
+                </div>
+
+                <div class="profile-dropdown">
+                    <div class="dropdown-button" onclick={toggleProfileMenu}>
+                        <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 1L7 7L13 1" stroke="#757575" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                
+                    <div class={dropdownMenuCssStyle} onmouseleave={closeProfileMenu}>
+                        <div class="menuItem">
+                            <div class="menuItemIcon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" data-row-id="1">
+                                    <path data-row-id="1" d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="#616161" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="menuItemLabel" onclick={showMyProfilePage}>
+                                Profile settings
+                            </div>
+                        </div>
+                        <div class="menuItem">
+                            <div class="menuItemIcon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" data-row-id="6">
+                                    <path data-row-id="6" d="M7.5 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H7.5" stroke="#616161" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path data-row-id="6" d="M13.333 14.1667L17.4997 10L13.333 5.83337" stroke="#616161" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path data-row-id="6" d="M17.5 10H7.5" stroke="#616161" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="menuItemLabel" onclick={callStandardLogout}>
+                                Logout
+                            </div>
+                        </div>
+                    </div>   
+                </div>
+
+            </div>
+        </div>
+    </div>
+    </template>
+</template>

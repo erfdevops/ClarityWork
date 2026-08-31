@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ReportOwner__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(
+OR(
+ISPICKVAL(Stage__c, &quot;Manager Evaluation&quot;),
+ISPICKVAL(Stage__c, &quot;Manager Approval&quot;)
+),
+Manager__r.FirstName &amp; &quot; &quot; &amp; Manager__r.LastName,
+
+IF(
+ISPICKVAL(Stage__c, &quot;Executive Approval&quot;),
+Executive__r.FirstName &amp; &quot; &quot; &amp; Executive__r.LastName,
+
+IF(
+OR(
+ISPICKVAL(Stage__c, &quot;Direct Report Review&quot;),
+ISPICKVAL(Stage__c, &quot;Approved&quot;)
+),
+Employee__r.Employee_Name__c,
+&quot;&quot;
+)
+)
+)</formula>
+    <label>Owner</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

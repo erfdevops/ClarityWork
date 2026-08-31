@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>LMS_Survey_Result_Type__c</fullName>
+    <label>LMS Survey Result Type</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Module</fullName>
+                <default>false</default>
+                <label>Module</label>
+            </value>
+            <value>
+                <fullName>Lesson Quiz</fullName>
+                <default>false</default>
+                <label>Lesson Quiz</label>
+            </value>
+            <value>
+                <fullName>Lesson Assignment</fullName>
+                <default>false</default>
+                <label>Lesson Assignment</label>
+            </value>
+            <value>
+                <fullName>External Lesson</fullName>
+                <default>false</default>
+                <label>External Lesson</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

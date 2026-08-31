@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Subtype__c</fullName>
+    <label>Subtype</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Accounting</fullName>
+                <default>false</default>
+                <label>Accounting</label>
+            </value>
+            <value>
+                <fullName>Benefits</fullName>
+                <default>false</default>
+                <label>Benefits</label>
+            </value>
+            <value>
+                <fullName>Regular Retirement</fullName>
+                <default>false</default>
+                <label>Regular Retirement</label>
+            </value>
+            <value>
+                <fullName>Disabiltiy</fullName>
+                <default>false</default>
+                <label>Disabiltiy</label>
+            </value>
+            <value>
+                <fullName>Term Vested</fullName>
+                <default>false</default>
+                <label>Term Vested</label>
+            </value>
+            <value>
+                <fullName>QDRO</fullName>
+                <default>false</default>
+                <label>QDRO</label>
+            </value>
+            <value>
+                <fullName>Deferred Calculations</fullName>
+                <default>false</default>
+                <label>Deferred Calculations</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Needs_Tasks_Auto_Created__c</fullName>
+    <defaultValue>false</defaultValue>
+    <inlineHelpText>To tell the system this is an Initiative Stage related to a benefit that requires Initiative Tasks to be created from metadata type &quot;Benefit Tasks by Stage&quot;</inlineHelpText>
+    <label>Needs Tasks Auto Created?</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

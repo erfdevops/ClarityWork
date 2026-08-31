@@ -1,0 +1,221 @@
+<template>
+    <div class="slds-card" style="background: #fff; display: flex; flex-direction: column;" 
+         data-expanded={isExpanded}>
+        <div class="slds-p-around_medium" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+            <div class="slds-grid slds-grid_align-spread slds-m-bottom_medium" style="flex-shrink: 0;">
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <h2 class="slds-text-heading_medium" style="margin: 0;">{lessonTitle}</h2>
+                    <template if:true={lessonStatus}>
+                        <div class={statusClass}>
+                            <lightning-icon icon-name={statusIcon} size="x-small" class="status-icon"></lightning-icon>
+                            <span class="status-text">{lessonStatus}</span>
+                        </div>
+                    </template>
+                    <!-- External Lesson Score Display -->
+                    <template if:true={showExternalScoreDisplay}>
+                        <div class="external-score-badge">
+                            <lightning-icon icon-name="utility:success" size="x-small" class="status-icon"></lightning-icon>
+                            <span class="status-text">Score: {externalLessonScore}%</span>
+                        </div>
+                    </template>
+                    <!-- Enter External Score Button -->
+                    <template if:true={showExternalScoreButton}>
+                        <lightning-button 
+                            label="Enter External Score"
+                            variant="brand"
+                            size="small"
+                            onclick={handleOpenExternalScoreModal}>
+                        </lightning-button>
+                    </template>
+                </div>
+                <div class="slds-button-group" role="group">
+                    <!-- View Toggle Buttons -->
+                    <lightning-button-group>
+                        <lightning-button 
+                            label="Content"
+                            variant={contentViewVariant}
+                            onclick={showContentView}
+                            size="small">
+                        </lightning-button>
+                        <lightning-button 
+                            label="PDF"
+                            variant={pdfViewVariant}
+                            onclick={showPdfView}
+                            size="small">
+                        </lightning-button>
+                    </lightning-button-group>
+                    
+                    <!-- Expand/Collapse Button -->
+                    <lightning-button-icon 
+                        icon-name={expandIcon}
+                        alternative-text={expandButtonText}
+                        title={expandButtonText}
+                        variant="bare"
+                        onclick={toggleExpand}
+                        class="slds-m-left_small">
+                    </lightning-button-icon>
+                </div>
+            </div>
+            
+            <!-- Loading State -->
+            <template if:true={isLoading}>
+                <div class="slds-align_absolute-center" style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                    <lightning-spinner alternative-text="Loading lesson content..." size="medium"></lightning-spinner>
+                </div>
+            </template>
+            
+            <!-- Error State -->
+            <template if:true={error}>
+                <div class="slds-box slds-theme_error slds-m-bottom_medium" style="flex-shrink: 0;">
+                    <p>Error loading lesson content: {error.body.message}</p>
+                </div>
+            </template>
+
+            <!-- Empty State - Show when no lesson is selected -->
+            <template if:false={lessonWeekAssignmentId}>
+                <div class="empty-state-container">
+                    <img src={emptyStateImageUrl} alt="No lesson selected" class="empty-state-image">
+                    <h3 class="empty-state-title">No Lesson Selected</h3>
+                    <p class="empty-state-message">Select a lesson from the list to view its content.</p>
+                </div>
+            </template>
+            
+            <!-- Main Content Area - Only show when not loading -->
+            <template if:false={isLoading}>
+                <!-- Lesson Content - Show when currentView is 'content' -->
+                <template if:true={isContentView}>
+                    <div class="lesson-html-content" 
+                         style={contentStyle}
+                         lwc:dom="manual"></div>
+                    
+                    <!-- Video Viewer - Show after objectives but before main content -->
+                    <template if:true={hasVideoFile}>
+                        <div class="video-section" style="margin: 24px 0;">
+                            <c-video-viewer 
+                                lesson-id={lessonId}
+                                height-in-rem="25">
+                            </c-video-viewer>
+                        </div>
+                    </template>
+                </template>
+                
+                <!-- PDF Viewer - Show when currentView is 'pdf' -->
+                <template if:true={isPdfView}>
+                    <c-pdf-viewer 
+                        lesson-id={lessonId}>
+                    </c-pdf-viewer>
+                </template>
+                
+                <!-- Show quiz panel only for lessons (not assignments) and only in content view -->
+                <template if:true={isLesson}>
+                    <template if:true={isContentView}>
+                        <template if:true={hasQuiz}>
+                            <c-lesson-quiz-panel 
+                                lesson-id={lessonId}
+                                enrollment-id={enrollmentId}
+                                onquizcompleted={handleQuizCompleted}>
+                            </c-lesson-quiz-panel>
+                        </template>
+                    </template>
+                </template>
+                
+                <!-- Show assignment file uploader and completion message for assignments and only in content view -->
+                <template if:true={isAssignment}>
+                    <template if:true={isContentView}>
+                        <!-- File Uploader Component with Date Info -->
+                        <div class="slds-box slds-m-top_medium" style="background: #f3f3f3; border: 1px solid #d8d8d8;">
+                            <div class="slds-grid slds-grid_align-spread slds-m-bottom_medium">
+                                <div>
+                                    <div class="slds-text-title_caps slds-m-bottom_x-small">File Submission</div>
+                                </div>
+                                <div class="slds-text-body_small" style="color: #666;">
+                                    <template if:true={assignmentDueDate}>
+                                        <span>Due Date: <strong>{assignmentDueDate}</strong></span>
+                                        <template if:true={assignmentExtensionDate}>
+                                            <span style="margin-left: 16px;">Ext. Date: <strong>{assignmentExtensionDate}</strong></span>
+                                        </template>
+                                    </template>
+                                </div>
+                            </div>
+                            <c-file-uploader 
+                                lesson-week-assignment-id={lessonWeekAssignmentId}
+                                assignment-due-date={assignmentDueDate}
+                                assignment-extension-date={assignmentExtensionDate}
+                                onassignmentsubmitted={handleAssignmentSubmitted}>
+                            </c-file-uploader>
+                        </div>
+                        
+                        <!-- Assignment Instructions -->
+                        <div class="slds-box slds-m-top_medium" style="background:#e8f4fd; border: 1px solid #1589ee; border-radius: 6px;">
+                            <div class="slds-text-title_caps slds-m-bottom_x-small slds-text-color_default">Assignment Instructions</div>
+                            <div class="slds-text-body_regular">
+                                This is an assignment. Please review the content above, complete any required tasks, and upload your submission files using the uploader above.
+                            </div>
+                        </div>
+                    </template>
+                </template>
+            </template>
+        </div>
+    </div>
+
+    <!-- External Score Modal -->
+    <template if:true={showExternalScoreModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <!-- Modal Header -->
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" 
+                            title="Close" onclick={handleCloseExternalScoreModal}>
+                        <lightning-icon icon-name="utility:close" alternative-text="close" size="small"></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 class="slds-text-heading_medium slds-hyphenate">Enter External Lesson Score</h2>
+                </header>
+                
+                <!-- Modal Body -->
+                <div class="slds-modal__content slds-p-around_medium">
+                    <div class="slds-form-element">
+                        <label class="slds-form-element__label" for="external-score-input">
+                            <abbr class="slds-required" title="required">*</abbr>Score (0-100)
+                        </label>
+                        <div class="slds-form-element__control">
+                            <lightning-input 
+                                type="number" 
+                                id="external-score-input"
+                                name="externalScore"
+                                value={externalScore}
+                                min="0"
+                                max="100"
+                                step="0.01"
+                                formatter="decimal"
+                                required
+                                onchange={handleExternalScoreChange}
+                                placeholder="Enter score (max 100)">
+                            </lightning-input>
+                        </div>
+                        <div class="slds-form-element__help slds-m-top_small">
+                            Please enter the external lesson score. The maximum score is 100.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modal Footer -->
+                <footer class="slds-modal__footer">
+                    <lightning-button 
+                        label="Cancel" 
+                        onclick={handleCloseExternalScoreModal}
+                        disabled={isSavingScore}>
+                    </lightning-button>
+                    <lightning-button 
+                        variant="brand" 
+                        label="Save Score" 
+                        onclick={handleSaveExternalScore}
+                        disabled={isSavingScore}
+                        class="slds-m-left_x-small">
+                    </lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

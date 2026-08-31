@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Official_Classification_Title__c</fullName>
+    <label>Official Classification Title</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Pension Officer II</fullName>
+                <default>false</default>
+                <label>Pension Officer II</label>
+            </value>
+            <value>
+                <fullName>Pension Officer I</fullName>
+                <default>false</default>
+                <label>Pension Officer I</label>
+            </value>
+            <value>
+                <fullName>Executive Director</fullName>
+                <default>false</default>
+                <label>Executive Director</label>
+            </value>
+            <value>
+                <fullName>Compliance Officer</fullName>
+                <default>false</default>
+                <label>Compliance Officer</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

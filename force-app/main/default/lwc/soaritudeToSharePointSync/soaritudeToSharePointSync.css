@@ -1,0 +1,41 @@
+/* Gray background for card header - 64px height to match standard components */
+.slds-card__header {
+    background-color: #f3f3f3;
+    border-bottom: 1px solid #dddbda;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    height: 4rem; /* 64px */
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Sync button styling */
+.sync-button {
+    width: 100%;
+}
+
+/* Empty state styling */
+.empty-state {
+    background-color: #f3f3f3;
+    border-radius: 0.25rem;
+}
+
+/* Card header title */
+.slds-card__header-title {
+    font-weight: 700;
+}
+
+/* Reduce spacing between columns */
+.slds-gutters_small > .slds-col {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+}
+
+/* Card body spacing - align with standard components */
+.slds-card__body_inner {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 1rem;
+}

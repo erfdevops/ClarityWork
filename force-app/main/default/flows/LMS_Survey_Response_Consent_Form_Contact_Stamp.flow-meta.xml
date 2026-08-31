@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>65.0</apiVersion>
+    <decisions>
+        <name>Is_Lesson_Consent_Form</name>
+        <label>Is Lesson Consent Form?</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Yes</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.LMS_Survey_Question_ID__r.LMS_Survey__r.Lesson__r.Lesson_Name__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Member Information Consent Form</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Update_Contact</targetReference>
+            </connector>
+            <label>Yes</label>
+        </rules>
+    </decisions>
+    <environments>Default</environments>
+    <formulas>
+        <name>ConsentStatus</name>
+        <dataType>String</dataType>
+        <expression>IF(
+    {!$Record.Response__c}= &quot;A&quot;,
+    &quot;consented to their name and/or image in communications with members or retirees&quot;,
+    &quot;did not consent to their name and/or image in communications with members or retirees&quot;
+)</expression>
+    </formulas>
+    <formulas>
+        <name>CurrentUser</name>
+        <dataType>String</dataType>
+        <expression>{!$User.FirstName} &amp; &apos; &apos; &amp; {!$User.LastName}</expression>
+    </formulas>
+    <interviewLabel>LMS Survey Response Consent Form Contact Stamp {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>LMS Survey Response Consent Form Contact Stamp</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordUpdates>
+        <name>Update_Contact</name>
+        <label>Update Contact</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <inputAssignments>
+            <field>Consent_Date__c</field>
+            <value>
+                <elementReference>$Flow.CurrentDateTime</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Consent_Status__c</field>
+            <value>
+                <elementReference>ConsentStatus</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Consent_User__c</field>
+            <value>
+                <elementReference>CurrentUser</elementReference>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record.Enrollment__r.External_Resource__r</inputReference>
+    </recordUpdates>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Is_Lesson_Consent_Form</targetReference>
+        </connector>
+        <object>LMS_Survey_Response__c</object>
+        <recordTriggerType>Create</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>

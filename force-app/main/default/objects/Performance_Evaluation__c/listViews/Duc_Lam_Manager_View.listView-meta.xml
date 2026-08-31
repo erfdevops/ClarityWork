@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Duc_Lam_Manager_View</fullName>
+    <columns>Evaluation_ID__c</columns>
+    <columns>NAME</columns>
+    <columns>Type__c</columns>
+    <columns>Fiscal_Year__c</columns>
+    <columns>Stage__c</columns>
+    <columns>Employee__c</columns>
+    <columns>Manager__c</columns>
+    <columns>Executive__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Manager__c</field>
+        <operation>equals</operation>
+        <value>Duc Lam</value>
+    </filters>
+    <label>Duc Lam Manager View</label>
+    <sharedTo>
+        <group>Leadership_Team</group>
+    </sharedTo>
+</ListView>

@@ -1,0 +1,113 @@
+<template>
+    <div class="general-container">
+        <div class="header-container">
+            <div class="header-title">
+                Death Report from PBI CSV File Uploader
+            </div>
+        </div>
+        <div class="body-container">
+            <div class="uploader-container">
+                <div class="button-upload">
+                    <input type="file" accept=".csv" onchange={handleFileChange} />
+                </div>
+                <template if:true={rowsPreview.length}>
+                    <div class="slds-m-top_medium">
+                        <h3 class="slds-text-heading_small">Benefit Records Preview</h3>
+                            <div class="table-container">
+                            <table class="">
+                                <thead>
+                                    <tr>
+                                        <template for:each={tableHeaders} for:item="col">
+                                            <th key={col.id}><div class="table-header">{col.label}</div></th>
+                                        </template>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={rowsPreview} for:item="record">
+                                        <tr key={record.clientSSN}>
+                                            <td><div class="table-row">{record.pbiAccount}</div></td>
+                                            <td><div class="table-row">{record.benefitType}</div></td>
+                                            <td><div class="table-row">{record.clientSSN}</div></td>
+                                            <td><div class="table-row">{record.clientPID}</div></td>
+                                            <td><div class="table-row">{record.clientLast}</div></td>
+                                            <td><div class="table-row">{record.clientFirst}</div></td>
+                                            <td><div class="table-row">{record.clientDOB}</div></td>
+                                            <td><div class="table-row">{record.pbiGroup}</div></td>
+                                            <td><div class="table-row">{record.city}</div></td>
+                                            <td><div class="table-row">{record.state}</div></td>
+                                            <td><div class="table-row">{record.cu1}</div></td>
+                                            <td><div class="table-row">{record.cu2}</div></td>
+                                            <td><div class="table-row">{record.cu3}</div></td>
+                                            <td><div class="table-row">{record.cu4}</div></td>
+                                            <td><div class="table-row">{record.pbiSSN}</div></td>
+                                            <td><div class="table-row">{record.pbiLast}</div></td>
+                                            <td><div class="table-row">{record.pbiFirst}</div></td>
+                                            <td><div class="table-row">{record.pbiDOB}</div></td>
+                                            <td><div class="table-row">{record.pbiDOD}</div></td>
+                                            <td><div class="table-row">{record.pbiCity}</div></td>
+                                            <td><div class="table-row">{record.pbiState}</div></td>
+                                            <td><div class="table-row">{record.pbiZip}</div></td>
+                                            <td><div class="table-row">{record.source}</div></td>
+                                            <td><div class="table-row">{record.url1}</div></td>
+                                            <td><div class="table-row">{record.url2}</div></td>
+                                            <td><div class="table-row">{record.url3}</div></td>
+                                            <td><div class="table-row">{record.url4}</div></td>
+                                            <td><div class="table-row">{record.url5}</div></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </template>
+                <div class="slds-m-top_medium">
+                    <lightning-button 
+                        label="Create Benefit Records" 
+                        variant="brand"
+                        onclick={createRecords} 
+                        disabled={createDisabled}>
+                    </lightning-button>
+                    <lightning-button 
+                        label="Clear" 
+                        onclick={clearAll} 
+                        class="slds-m-left_small">
+                    </lightning-button>
+                </div>
+                <template if:true={isLoading}>
+                    <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                </template>
+                <!--
+                <template if:true={lastResult}>
+                    <div class="slds-m-top_medium">
+                        <h3 class="slds-text-heading_small">Result</h3>
+                        <p>Total rows: {lastResult.total}</p>
+                        <p>Created: {lastResult.successCount}</p>
+                        <template if:true={hasFailures}>
+                            <p class="slds-text-color_error">Failures: {failureCount}</p>
+                            <div class="slds-box slds-m-top_small">
+                                <template for:each={lastResult.failed} for:item="f">
+                                    <p key={f.Id}><strong>{f.Id}:</strong> {f}</p>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                -->
+            </div>
+            <div class="instructions-container">
+                <div class="instructions-title">
+                    Instructions
+                </div>
+                <div class="instructions-text">
+                    <ul>
+                        <li>Prepare your CSV file before uploading it.</li>
+                        <li>Make sure the columns names and order match the template.</li>
+                        <li>Click the "Choose File" and browse for your CSV file.</li>
+                        <li>Verify the records are correct in the preview.</li>
+                        <li>Click on the "Create Benefit Records" button.</li>
+                    </ul> 
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

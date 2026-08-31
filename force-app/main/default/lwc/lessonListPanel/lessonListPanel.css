@@ -1,0 +1,11 @@
+/* Lesson List Panel Styles */
+:host {
+    display: block;
+}
+
+/* Match the height of lesson content panel */
+.slds-card {
+    height: 900px;
+    overflow-y: auto;
+    border-radius: 6px;
+}

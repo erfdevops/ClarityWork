@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Initiative_Stage_Layout</fullName>
+    <fields>Stage_ID__c</fields>
+    <fields>Name</fields>
+    <fields>Initiative__c</fields>
+    <fields>Employee__c</fields>
+    <fields>Status__c</fields>
+    <label>Initiative Stage Layout</label>
+</CompactLayout>

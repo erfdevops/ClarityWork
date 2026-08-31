@@ -1,0 +1,849 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>64.0</apiVersion>
+    <assignments>
+        <name>Add_to_Collection_Variable</name>
+        <label>Add to Collection Variable</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>socRetirementBenefitStages</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>soRBStage</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Clear_Variable</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Add_to_Stage_Collection_Variable</name>
+        <label>Add to Stage Collection Variable</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>socRetirementBenefitStages</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>soRBStage</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Clear_Variable_After_Adding_Values</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Clear_Variable</name>
+        <label>Clear Variable</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>soRBStage</assignToReference>
+            <operator>Assign</operator>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_Stages_to_Create_Later</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Clear_Variable_After_Adding_Values</name>
+        <label>Clear Variable After Adding Values</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>soRBStage</assignToReference>
+            <operator>Assign</operator>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_Disability_Stages</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Set_Up_Common_Stages</name>
+        <label>Set Up Common Stages</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>soRBStage.Benefit__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>soBenefitRecord.Id</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Status__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Not Started</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Name</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Loop_Stages_to_Create_Later.Stage_Name__c</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Stage_Step_Number__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Loop_Stages_to_Create_Later.Stage_Number__c</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Needs_Tasks_Auto_Created__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.OwnerId</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>fOwnerId</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Start_Date__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>fToday</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Initiative_Stage_Hierarchy__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Child Stage</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Smart_Goal_in_Days__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>vSmartGoalInDays</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Employee__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>currentItem_Find_Employee.Id</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Add_to_Collection_Variable</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Set_Up_Disability_Stages</name>
+        <label>Set Up Disability Stage</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>soRBStage.Benefit__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>soBenefitRecord.Id</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Status__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Not Started</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Name</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Loop_Disability_Stages.Stage_Name__c</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Stage_Step_Number__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Loop_Disability_Stages.Stage_Number__c</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Needs_Tasks_Auto_Created__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.OwnerId</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Loop_Disability_Stages.Owner_Id__c</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Start_Date__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>fToday</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Initiative_Stage_Hierarchy__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Child Stage</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Smart_Goal_in_Days__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>vSmartGoalInDays</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Subtype__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Disabiltiy</stringValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Add_to_Stage_Collection_Variable</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Setup_Disability_Stages</name>
+        <label>Setup Disability Stages</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>soRBStage.Benefit__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>soBenefitRecord.Id</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Status__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Not Started</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Name</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Loop_Stages_to_Create_Later.Stage_Name__c</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Stage_Step_Number__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Loop_Stages_to_Create_Later.Stage_Number__c</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Needs_Tasks_Auto_Created__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.OwnerId</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Get_Disability_Calculation_User.Owner_Id__c</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Start_Date__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>fToday</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Initiative_Stage_Hierarchy__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Child Stage</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Smart_Goal_in_Days__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>vSmartGoalInDays</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>soRBStage.Employee__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Get_Employee.Id</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Add_to_Collection_Variable</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Store_End_Of_Month_Date</name>
+        <label>Store End Of Month Date</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>vEndOfMonthDate</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>fEndOfMonthDate</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>vSmartGoalInDays</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>fSmartGoalInDays</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Retirement_SubType</targetReference>
+        </connector>
+    </assignments>
+    <collectionProcessors>
+        <name>Find_Employee</name>
+        <elementSubtype>FilterCollectionProcessor</elementSubtype>
+        <label>Find Employee</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNextValueToReference>currentItem_Find_Employee</assignNextValueToReference>
+        <collectionProcessorType>FilterCollectionProcessor</collectionProcessorType>
+        <collectionReference>Get_Employees</collectionReference>
+        <conditionLogic>and</conditionLogic>
+        <conditions>
+            <leftValueReference>currentItem_Find_Employee.User__c</leftValueReference>
+            <operator>EqualTo</operator>
+            <rightValue>
+                <elementReference>Loop_Stages_to_Create_Later.Owner_Id__c</elementReference>
+            </rightValue>
+        </conditions>
+        <connector>
+            <targetReference>Is_Disability_Benefit</targetReference>
+        </connector>
+    </collectionProcessors>
+    <decisions>
+        <name>Is_Disability_Benefit</name>
+        <label>Is Disability Benefit?</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Set_Up_Common_Stages</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Yes</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>soBenefitRecord.Benefit_Sub_Type__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Disability</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>Loop_Stages_to_Create_Later.Stage_Name__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Benefit Calculation</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Setup_Disability_Stages</targetReference>
+            </connector>
+            <label>Yes</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Requires_Common_Stages</name>
+        <label>Requires Common Stages?</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Insert_Stages</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Yes_Requires_Common_Stages</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>soBenefitRecord.Benefit_Sub_Type__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <stringValue>QDRO</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>soBenefitRecord.Benefit_Sub_Type__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <stringValue>Deferred Calculations</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Get_Disability_Calculation_User</targetReference>
+            </connector>
+            <label>Yes, Requires Common Stages</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Retirement_SubType</name>
+        <label>Retirement SubType</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Requires_Common_Stages</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Disability</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>vSelectedRecordType</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Disability</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Get_Disability_Stages</targetReference>
+            </connector>
+            <label>Disability</label>
+        </rules>
+    </decisions>
+    <environments>Default</environments>
+    <formulas>
+        <name>fEndOfMonthDate</name>
+        <dataType>Date</dataType>
+        <expression>/* Get the last calendar day of this month */
+IF(
+    /* If last day is Saturday */
+    CASE(
+        WEEKDAY(
+            DATE(
+                YEAR(TODAY()),
+                MONTH(TODAY()) + 1,
+                1
+            ) - 1
+        ),
+        1, &quot;Sun&quot;,
+        2, &quot;Mon&quot;,
+        3, &quot;Tue&quot;,
+        4, &quot;Wed&quot;,
+        5, &quot;Thu&quot;,
+        6, &quot;Fri&quot;,
+        7, &quot;Sat&quot;,
+        &quot;&quot;
+    ) = &quot;Sat&quot;,
+    /* Then last business day is that date minus 1 day (Friday) */
+    (DATE(
+        YEAR(TODAY()),
+        MONTH(TODAY()) + 1,
+        1
+    ) - 1) - 1,
+
+    /* else if last day is Sunday */
+    IF(
+        CASE(
+            WEEKDAY(
+                DATE(
+                    YEAR(TODAY()),
+                    MONTH(TODAY()) + 1,
+                    1
+                ) - 1
+            ),
+            1, &quot;Sun&quot;,
+            2, &quot;Mon&quot;,
+            3, &quot;Tue&quot;,
+            4, &quot;Wed&quot;,
+            5, &quot;Thu&quot;,
+            6, &quot;Fri&quot;,
+            7, &quot;Sat&quot;,
+            &quot;&quot;
+        ) = &quot;Sun&quot;,
+        /* Then last business day is that date minus 2 days (Friday) */
+        (DATE(
+            YEAR(TODAY()),
+            MONTH(TODAY()) + 1,
+            1
+        ) - 1) - 2,
+
+        /* else it&apos;s already a weekday, just use it */
+        DATE(
+            YEAR(TODAY()),
+            MONTH(TODAY()) + 1,
+            1
+        ) - 1
+    )
+)</expression>
+    </formulas>
+    <formulas>
+        <name>fOwnerId</name>
+        <dataType>String</dataType>
+        <expression>IF(ISBLANK({!Loop_Stages_to_Create_Later.Owner_Id__c}),
+    {!$User.Id},{!Loop_Stages_to_Create_Later.Owner_Id__c})</expression>
+    </formulas>
+    <formulas>
+        <name>fSmartGoalInDays</name>
+        <dataType>Number</dataType>
+        <expression>/* Get the last calendar day of this month */
+IF(
+    /* If last day is Saturday */
+    CASE(
+        WEEKDAY(
+            DATE(
+                YEAR(TODAY()),
+                MONTH(TODAY()) + 1,
+                1
+            ) - 1
+        ),
+        1, &quot;Sun&quot;,
+        2, &quot;Mon&quot;,
+        3, &quot;Tue&quot;,
+        4, &quot;Wed&quot;,
+        5, &quot;Thu&quot;,
+        6, &quot;Fri&quot;,
+        7, &quot;Sat&quot;,
+        &quot;&quot;
+    ) = &quot;Sat&quot;,
+    /* Then last business day is that date minus 1 day (Friday) */
+    (DATE(
+        YEAR(TODAY()),
+        MONTH(TODAY()) + 1,
+        1
+    ) - 1) - 1,
+
+    /* else if last day is Sunday */
+    IF(
+        CASE(
+            WEEKDAY(
+                DATE(
+                    YEAR(TODAY()),
+                    MONTH(TODAY()) + 1,
+                    1
+                ) - 1
+            ),
+            1, &quot;Sun&quot;,
+            2, &quot;Mon&quot;,
+            3, &quot;Tue&quot;,
+            4, &quot;Wed&quot;,
+            5, &quot;Thu&quot;,
+            6, &quot;Fri&quot;,
+            7, &quot;Sat&quot;,
+            &quot;&quot;
+        ) = &quot;Sun&quot;,
+        /* Then last business day is that date minus 2 days (Friday) */
+        (DATE(
+            YEAR(TODAY()),
+            MONTH(TODAY()) + 1,
+            1
+        ) - 1) - 2,
+
+        /* else it&apos;s already a weekday, just use it */
+        DATE(
+            YEAR(TODAY()),
+            MONTH(TODAY()) + 1,
+            1
+        ) - 1
+    )
+)
+- TODAY()</expression>
+        <scale>0</scale>
+    </formulas>
+    <formulas>
+        <name>fThisYear</name>
+        <dataType>Date</dataType>
+        <expression>DATE(01,01,YEAR(TODAY()))</expression>
+    </formulas>
+    <formulas>
+        <name>fToday</name>
+        <dataType>Date</dataType>
+        <expression>TODAY()</expression>
+    </formulas>
+    <interviewLabel>Retirement Benefit - Create Stages Subflow {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Retirement Benefit - Create Stages Subflow</label>
+    <loops>
+        <name>Loop_Disability_Stages</name>
+        <label>Loop Disability Stages</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <collectionReference>Get_Disability_Stages</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Set_Up_Disability_Stages</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Requires_Common_Stages</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <loops>
+        <name>Loop_Stages_to_Create_Later</name>
+        <label>Loop Stages to Create Later</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <collectionReference>Get_Common_Stages</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Find_Employee</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Insert_Stages</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordCreates>
+        <name>Insert_Stages</name>
+        <label>Insert Stages</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <inputReference>socRetirementBenefitStages</inputReference>
+    </recordCreates>
+    <recordLookups>
+        <name>Get_Common_Stages</name>
+        <label>Get Common Stages</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Get_Retirement_Calculations_Queue</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Is_a_Shared_Stage__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>Retirement_Benefit_Stages__mdt</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Disability_Calculation_User</name>
+        <label>Get Disability Calculation User</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Get_Employee</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Retirement_Type__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Disability</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Retirement_Benefit_Stages__mdt</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Disability_Stages</name>
+        <label>Get Disability Stages</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Loop_Disability_Stages</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Retirement_Type__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>vSelectedRecordType</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>Retirement_Benefit_Stages__mdt</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Employee</name>
+        <label>Get Employee</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Get_Employees</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>User__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_Disability_Calculation_User.Owner_Id__c</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>Active__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Employee__c</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Employees</name>
+        <label>Get Employees</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Get_Common_Stages</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Active__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>Employee__c</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Retirement_Calculations_Queue</name>
+        <label>Get Retirement Calculations Queue</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Loop_Stages_to_Create_Later</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>00GgP000001N1Co</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>QueueSobject</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <runInMode>SystemModeWithoutSharing</runInMode>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Store_End_Of_Month_Date</targetReference>
+        </connector>
+    </start>
+    <status>Active</status>
+    <variables>
+        <name>currentItem_Filter_Tasks_by_Type</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Death_Benefit_Tasks_by_Stage__mdt</objectType>
+    </variables>
+    <variables>
+        <name>currentItem_Find_Employee</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Employee__c</objectType>
+    </variables>
+    <variables>
+        <name>soBenefitRecord</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Benefit__c</objectType>
+    </variables>
+    <variables>
+        <name>socRetirementBenefitStages</name>
+        <dataType>SObject</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Initiative_Stage__c</objectType>
+    </variables>
+    <variables>
+        <name>soRBStage</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Initiative_Stage__c</objectType>
+    </variables>
+    <variables>
+        <name>vEndOfMonthDate</name>
+        <dataType>Date</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>vSelectedRecordType</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>vSmartGoalInDays</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>0</scale>
+    </variables>
+    <variables>
+        <name>vStageNumber</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>0</scale>
+    </variables>
+</Flow>

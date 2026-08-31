@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>AllowValuesFrom60To100Only</fullName>
+    <active>false</active>
+    <description>Allows values from 60 to 100% on the Accuracy Level field.</description>
+    <errorConditionFormula>OR(
+ Accuracy_Level__c &lt; 0.60,
+ Accuracy_Level__c &gt; 1)</errorConditionFormula>
+    <errorDisplayField>Accuracy_Level__c</errorDisplayField>
+    <errorMessage>This field only allows values from 60 to 100.</errorMessage>
+</ValidationRule>

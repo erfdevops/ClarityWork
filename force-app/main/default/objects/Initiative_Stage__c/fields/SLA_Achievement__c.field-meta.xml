@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>SLA_Achievement__c</fullName>
+    <formula>IF(
+AND(
+  ISPICKVAL( Status__c , &quot;Completed&quot;), 
+ NOT(ISBLANK(Smart_Goal_in_Days__c )),
+      Requires_Approval__c = FALSE),
+IF(
+  Smart_Goal_in_Days__c &lt;= 0,
+  NULL,
+  MIN(
+    1,
+    MAX(
+      0.6,
+      IF(
+        BLANKVALUE(Business_Days_Since_Start_Date__c, 0) &lt;= 0,
+        1,  /* same-day or not started → 100% */
+        Smart_Goal_in_Days__c / Business_Days_Since_Start_Date__c
+      )
+    )
+  )
+)
+
+
+,NULL)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>SLA Achievement</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Percent</type>
+</CustomField>

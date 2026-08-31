@@ -1,0 +1,71 @@
+/* Main Container */
+.video-poc-container {
+    padding: 24px;
+    height: 100vh;
+    background: #f8f9fa;
+}
+
+/* Video Card */
+.video-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Card Header */
+.card-header {
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.card-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 8px 0;
+}
+
+.card-description {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Video Wrapper */
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000000;
+}
+
+.video-iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .video-poc-container {
+        padding: 16px;
+    }
+    
+    .video-card {
+        padding: 16px;
+    }
+    
+    .card-title {
+        font-size: 20px;
+    }
+}

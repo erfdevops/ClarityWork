@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Created_by_Enrollment_Wizard__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>To tell the system whether or not an enrollment record was created through the Enrollment Wizard.</description>
+    <label>Created by Enrollment Wizard?</label>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

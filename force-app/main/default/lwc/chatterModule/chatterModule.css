@@ -1,0 +1,144 @@
+.general-container {
+    width: 100%;
+    background: #fff;
+    padding: 0 20px 6px 20px;
+}
+
+.form-input-text {
+    /*font-family: "MS Trebuchet";*/
+    font-size: 12px;
+    color: #3F3E3B;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+    outline: none;
+}
+
+.comment-input {
+    margin: 25px 10px 15px 5px;
+    border: 1px solid #CCCCCC;
+    border-radius: 6px;
+    display: flex;
+}
+
+.comment-input input[type=text]:hover {
+    border: none;
+    background: none;
+}
+
+.comment-input input[type=text]:focus {
+    border: none !important;
+    background: none;
+}
+
+.comment-input input[type=text]:autofill {
+    border: none;
+}
+
+.comment-input input[type=text]:future {
+    border: 1px solid #5eff00;
+    background: #c8ffd4;
+}
+
+.comment-button {
+    padding: 2px;
+}
+
+.comment-tile {
+    border-radius: 6px;
+    padding: 5px;
+    margin-bottom: 12px;
+}
+
+.comment-section {
+    max-height: 720px;
+    overflow-y: scroll;
+    scrollbar-width: thin;
+    scrollbar-color: #004E14 #DFDFDF;
+}
+
+.tile-container-left {
+    width: 65%;
+    margin-right: auto;
+    margin-bottom: 15px;
+}
+
+.tile-comment-left {
+    display: grid;
+    grid-template-columns: auto 200px;
+    margin-bottom: 5px;
+}
+
+.tile-comment-user-left {
+    display: flex;
+    align-items: center;
+}
+
+.tile-comment-time-left {
+    font-size: 10px;
+    text-align: right;
+    color: var(--Grey-500, rgba(158, 158, 158, 1));
+    align-self: center;
+}
+
+.tile-container-right {
+    width: 65%;
+    margin-left: auto;
+    margin-right: 0;
+    margin-bottom: 15px;
+}
+
+.tile-comment-right {
+    display: grid;
+    grid-template-columns: 200px auto;
+    margin-bottom: 5px;
+}
+
+.tile-comment-user-right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+
+.tile-comment-time-right {
+    font-size: 10px;
+    text-align: left;
+    color: var(--Grey-500, rgba(158, 158, 158, 1));
+    align-self: center;
+}
+
+.profile-photo {
+    height: 36px;
+    border-radius: 50%;
+}
+
+.tile-profile-name {
+    /*font-family: "MS Trebuchet";*/
+    font-size: 16px;
+    font-weight: 500;
+    padding: 0 10px;
+    color: var(--Text-colours-Primary, rgba(63, 62, 59, 1));
+    display: flex;
+    align-items: center;
+}
+
+.tile-comment-text {
+    margin-top: 15px;
+    padding: 10px;
+    /*font-family: "MS Trebuchet";*/
+    font-size: 14px;
+    border-radius: 6px;
+    color: #3F3E3B;
+}
+
+.text-background-left {
+    background: #FAFAFA;
+    max-width: 900px;
+}
+
+.text-background-right {
+    background: #F4F6FA;
+}

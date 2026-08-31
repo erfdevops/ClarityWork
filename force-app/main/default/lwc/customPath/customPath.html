@@ -1,0 +1,39 @@
+<template>
+    <div class="general-container">
+        <div class="general-wrapper">
+            <div class="path-container">
+                <div class="path-wrapper">
+                    <template for:each={initiativeStagesPath} for:item="stage">
+                        <div class="stage-container" key={stage.id} onmouseenter={handleMouseOver} onmouseleave={handleMouseOut} onclick={handleOnClick} data-stageid={stage.id}>
+                            <div class="stage-arrow">
+                                <div class={stage.cssStyleArrowTop}></div>
+                                <div class={stage.cssStyleArrowBottom}></div>
+                                <div class={stage.cssStyleShape}></div>
+                            </div>
+                            <div class={stage.cssStyleText}>
+                                <template if:true={stage.complete}>
+                                    <template if:true={stage.showComplete}>
+                                        {stage.label}
+                                    </template>
+                                    <template if:false={stage.showComplete}>
+                                        <svg focusable="false" aria-hidden="true" viewBox="0 0 520 520" part="icon" lwc-1e39mgvor8u="" data-key="check" class="slds-icon slds-icon_xx-small">
+                                            <g lwc-1e39mgvor8u="">
+                                                <path d="M191 425L26 259c-6-6-6-16 0-22l22-22c6-6 16-6 22 0l124 125a10 10 0 0015 0L452 95c6-6 16-6 22 0l22 22c6 6 6 16 0 22L213 425c-6 7-16 7-22 0z" lwc-1e39mgvor8u=""></path>
+                                            </g>
+                                        </svg>
+                                    </template>
+                                </template>
+                                <template if:false={stage.complete}>
+                                    {stage.label}
+                                </template> 
+                            </div> 
+                            <!--
+                            <span class="tooltiptext">{stage.label}</span>
+                            -->
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

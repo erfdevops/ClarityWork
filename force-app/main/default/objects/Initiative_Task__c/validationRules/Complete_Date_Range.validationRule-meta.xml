@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Complete_Date_Range</fullName>
+    <active>false</active>
+    <errorConditionFormula>NOT(AND(Completion_Date__c &gt;= Stage__r.Start_Date__c,  Completion_Date__c &lt;= Stage__r.End_Date__c))</errorConditionFormula>
+    <errorDisplayField>Completion_Date__c</errorDisplayField>
+    <errorMessage>Completion Date must be inside the range of the End and Start Date from the Milestone</errorMessage>
+</ValidationRule>

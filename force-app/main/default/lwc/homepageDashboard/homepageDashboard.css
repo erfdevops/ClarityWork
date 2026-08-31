@@ -1,0 +1,49 @@
+/* Custom layout for optimized sidebar spacing */
+.sidebar-container {
+    flex: 0 0 80px; /* Fixed width to match compact sidebar */
+    min-width: 80px;
+}
+
+.main-content-container {
+    flex: 1; /* Take remaining space */
+    margin-left: 0; /* Remove margin to match gutter spacing */
+    width: calc(100% - 80px); /* Ensure full width utilization */
+    padding: 1rem; /* Add consistent padding on all sides */
+    padding-left: 0.75rem; /* Smaller left padding to match gutter spacing */
+}
+
+.layout-grid {
+    display: flex;
+    min-height: 100vh;
+    background: #F4F6FA;
+    width: 100%;
+}
+
+/* Ensure content areas use full width efficiently */
+.content-section {
+    width: 100%;
+}
+
+/* Override SLDS grid spacing for better layout */
+.main-content-container .slds-grid {
+    margin: 0;
+    width: 100%;
+}
+
+.main-content-container .slds-col {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar-container {
+        flex: 0 0 60px;
+        min-width: 60px;
+    }
+    
+    .main-content-container {
+        margin-left: 0.5rem;
+        width: calc(100% - 60px - 0.5rem);
+    }
+}

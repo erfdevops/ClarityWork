@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>LMS_Survey_Question_ID__c</fullName>
+    <deleteConstraint>Restrict</deleteConstraint>
+    <label>LMS Survey Question ID</label>
+    <referenceTo>LMS_Survey_Question__c</referenceTo>
+    <relationshipLabel>LMS Survey Responses</relationshipLabel>
+    <relationshipName>Responses</relationshipName>
+    <required>true</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

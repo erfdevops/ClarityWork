@@ -1,0 +1,57 @@
+<template>
+    <template if:true={isOpen}>
+        <div class="backdrop">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2>New Initiative Task</h2>
+                    <button class="close-button" onclick={closeModal}>×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-item">
+                        <div class="input-label">Name</div>
+                        <div class="input-wrapper">
+                            <input type="text" name="name" onchange={handleChange}>
+                        </div>
+                    </div>
+                    <div class="input-item">
+                        <div class="input-label">Start Date</div>
+                        <div class="input-wrapper">
+                            <input type="date" name="startdate" onchange={handleChange}>
+                        </div>
+                        <!--
+                        <template if:true={maxDateError}>
+                            <div class="error-message">Start Date should be between {mindate} and {maxdate}</div>
+                        </template>
+                        -->
+                    </div>
+                    <div class="input-item">
+                        <div class="input-label">Due Date</div>
+                        <div class="input-wrapper">
+                            <input type="date" name="duedate" onchange={handleChange}>
+                        </div>
+                        <!--
+                        <template if:true={minDateError}>
+                            <div class="error-message">Due Date should be between {mindate} and {maxdate}</div>
+                        </template>
+                        -->
+                    </div>
+                    <div class="input-item">
+                        <div class="input-label">Assigned To</div>
+                        <div class="input-wrapper">
+                            <select name="selectEmployee" id="selectEmployee" onchange={handleChange}>
+                                <option value="">None</option>
+                                <template for:each={employeeList} for:item="employee">
+                                    <option value={employee.id} key={employee.id}>{employee.name}</option>
+                                </template>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <lightning-button variant="neutral" label="Cancel" onclick={closeModal}></lightning-button>
+                    <lightning-button variant="brand" label="Save" onclick={handleSave}></lightning-button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

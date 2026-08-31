@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Board_Category__c</fullName>
+    <label>Board Category</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Payroll</fullName>
+                <default>false</default>
+                <label>Payroll</label>
+            </value>
+            <value>
+                <fullName>City Invoicing &amp; Contribution Collections</fullName>
+                <default>false</default>
+                <label>City Invoicing &amp; Contribution Collections</label>
+            </value>
+            <value>
+                <fullName>Retirement Calculations</fullName>
+                <default>false</default>
+                <label>Retirement Calculations</label>
+            </value>
+            <value>
+                <fullName>Terminated Vested</fullName>
+                <default>false</default>
+                <label>Terminated Vested</label>
+            </value>
+            <value>
+                <fullName>Rating</fullName>
+                <default>false</default>
+                <label>Rating</label>
+            </value>
+            <value>
+                <fullName>Consent Agendas</fullName>
+                <default>false</default>
+                <label>Consent Agendas</label>
+            </value>
+            <value>
+                <fullName>Board Minutes</fullName>
+                <default>false</default>
+                <label>Board Minutes</label>
+            </value>
+            <value>
+                <fullName>Education</fullName>
+                <default>false</default>
+                <label>Education</label>
+            </value>
+            <value>
+                <fullName>Member Satisfaction</fullName>
+                <default>false</default>
+                <label>Member Satisfaction</label>
+            </value>
+            <value>
+                <fullName>Rate of Return</fullName>
+                <default>false</default>
+                <label>Rate of Return</label>
+            </value>
+            <value>
+                <fullName>Watch List</fullName>
+                <default>false</default>
+                <label>Watch List</label>
+            </value>
+            <value>
+                <fullName>SMART GOALS</fullName>
+                <default>false</default>
+                <label>SMART GOALS</label>
+            </value>
+            <value>
+                <fullName>Performance Evaluation</fullName>
+                <default>false</default>
+                <label>Performance Evaluation</label>
+            </value>
+            <value>
+                <fullName>Technology Security</fullName>
+                <default>false</default>
+                <label>Technology Security</label>
+            </value>
+            <value>
+                <fullName>Technology Support</fullName>
+                <default>false</default>
+                <label>Technology Support</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

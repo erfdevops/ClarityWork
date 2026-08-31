@@ -1,0 +1,117 @@
+<template>
+    <!-- Stats Cards -->
+    <div class="slds-grid slds-gutters slds-m-bottom_medium">
+        <template if:true={showBadgesAchieved}>
+            <div class={tileWidthClass}>
+                <article class="slds-card stats-card">
+                    <div class="slds-card__body slds-card__body_inner slds-text-align_center">
+                        <div class="stat-label">Badges Achieved</div>
+                        <div class="stat-value">{badgesAchieved}/{totalBadges}</div>
+                    </div>
+                </article>
+            </div>
+        </template>
+        <template if:true={showModulesInProgress}>
+            <div class={tileWidthClass}>
+                <article class="slds-card stats-card">
+                    <div class="slds-card__body slds-card__body_inner slds-text-align_center">
+                        <div class="stat-label">Modules In Progress</div>
+                        <div class="stat-value">{inProgressModules}/{totalModules}</div>
+                    </div>
+                </article>
+            </div>
+        </template>
+        <template if:true={showModulesCompleted}>
+            <div class={tileWidthClass}>
+                <article class="slds-card stats-card">
+                    <div class="slds-card__body slds-card__body_inner slds-text-align_center">
+                        <div class="stat-label">Modules Completed</div>
+                        <div class="stat-value">{completedModules}/{totalModules}</div>
+                    </div>
+                </article>
+            </div>
+        </template>
+        <template if:true={showPointsGained}>
+            <div class={tileWidthClass}>
+                <article class="slds-card stats-card">
+                    <div class="slds-card__body slds-card__body_inner slds-text-align_center">
+                        <div class="stat-label">Points Gained</div>
+                        <div class="stat-value">{earnedPoints}/{totalPoints}</div>
+                    </div>
+                </article>
+            </div>
+        </template>
+    </div>
+
+    <!-- Overall Progress Bar -->
+    <div class="progress-section slds-m-bottom_large">
+        <div class="progress-bar-container">
+            <div class="progress-bar" style={progressBarStyle}></div>
+        </div>
+    </div>
+
+    <!-- My Journey Modules Section -->
+    <div class="journey-modules-container">
+        <!-- Empty State -->
+        <template if:true={journeyData.isEmpty}>
+            <div class="empty-state slds-text-align_center slds-p-around_large">
+                <lightning-icon icon-name="custom:custom19" size="large" variant="bare" class="empty-state-icon"></lightning-icon>
+                <h3 class="slds-text-heading_medium slds-m-bottom_small">No Modules Found</h3>
+                <p class="slds-text-body_regular slds-text-color_weak">{journeyData.emptyStateMessage}</p>
+            </div>
+        </template>
+
+        <!-- Course List with Header -->
+        <template if:false={journeyData.isEmpty}>
+            <div class="course-list-container">
+                <div class="journey-modules-header">
+                    <h2 class="journey-modules-title">My Journey Modules</h2>
+                    <div class="filter-dropdown">
+                        <select 
+                            class="status-filter-select"
+                            value={selectedFilter}
+                            onchange={handleFilterChange}>
+                            <option value="all">Filter by Category</option>
+                            <option value="all">All Modules</option>
+                            <option value="upcoming">Not Started</option>
+                            <option value="progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modules-list">
+                    <template for:each={filteredCourseData} for:item="course" for:index="index">
+                        <div key={course.id} class="course-item clickable-item" onclick={handleModuleClick} data-module-id={course.id}>
+                            <div class="course-item-content">
+                                <div class="course-image-container">
+                                    <template if:true={course.badge}>
+                                        <lightning-formatted-rich-text value={course.badge}></lightning-formatted-rich-text>
+                                    </template>
+                                    <template if:false={course.badge}>
+                                        <!-- Fallback when no badge is available -->
+                                    </template>
+                                </div>
+                                <div class="course-info">
+                                    <div class="course-header">
+                                        <div class="course-details">
+                                            <div class="course-name">{course.courseName}</div>
+                                            <div class="module-name">{course.moduleName}</div>
+                                            <div class="next-module">Next Module: {course.nextModule}</div>
+                                        </div>
+                                        <div class="course-actions">
+                                            <span class={course.statusClass}>{course.status}</span>
+                                            <lightning-icon icon-name="utility:chevrondown" size="x-small" class="dropdown-icon"></lightning-icon>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <template if:false={course.isLast}>
+                                <div class="course-separator"></div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

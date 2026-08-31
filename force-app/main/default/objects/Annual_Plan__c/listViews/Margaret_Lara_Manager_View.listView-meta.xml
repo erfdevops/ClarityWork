@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Margaret_Lara_Manager_View</fullName>
+    <columns>Annual_Plan_ID__c</columns>
+    <columns>NAME</columns>
+    <columns>Employee__c</columns>
+    <columns>Official_Classification_Title__c</columns>
+    <columns>Fiscal_Year__c</columns>
+    <columns>Manager__c</columns>
+    <columns>Executive__c</columns>
+    <columns>Stage__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Manager__c</field>
+        <operation>equals</operation>
+        <value>Margaret Lara</value>
+    </filters>
+    <label>Margaret Lara Manager View</label>
+    <sharedTo>
+        <group>Leadership_Team</group>
+    </sharedTo>
+</ListView>

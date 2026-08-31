@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Due_Date_formula__c</fullName>
+    <formula>IF(
+ ISPICKVAL( Benefit__r.Benefit_Type__c , &quot;Death Benefit&quot;),
+            Start_Date__c +  Smart_Goal_in_Days__c,
+IF(
+ISPICKVAL( Benefit__r.Benefit_Type__c , &quot;Retirement&quot;),
+/* Get the last calendar day of this month */
+IF(
+    /* If last day is Saturday */
+    CASE(
+        WEEKDAY(
+            DATE(
+                YEAR(TODAY()),
+                MONTH(TODAY()) + 1,
+                1
+            ) - 1
+        ),
+        1, &quot;Sun&quot;,
+        2, &quot;Mon&quot;,
+        3, &quot;Tue&quot;,
+        4, &quot;Wed&quot;,
+        5, &quot;Thu&quot;,
+        6, &quot;Fri&quot;,
+        7, &quot;Sat&quot;,
+        &quot;&quot;
+    ) = &quot;Sat&quot;,
+    /* Then last business day is that date minus 1 day (Friday) */
+    (DATE(
+        YEAR(TODAY()),
+        MONTH(TODAY()) + 1,
+        1
+    ) - 1) - 1,
+
+    /* else if last day is Sunday */
+    IF(
+        CASE(
+            WEEKDAY(
+                DATE(
+                    YEAR(TODAY()),
+                    MONTH(TODAY()) + 1,
+                    1
+                ) - 1
+            ),
+            1, &quot;Sun&quot;,
+            2, &quot;Mon&quot;,
+            3, &quot;Tue&quot;,
+            4, &quot;Wed&quot;,
+            5, &quot;Thu&quot;,
+            6, &quot;Fri&quot;,
+            7, &quot;Sat&quot;,
+            &quot;&quot;
+        ) = &quot;Sun&quot;,
+        /* Then last business day is that date minus 2 days (Friday) */
+        (DATE(
+            YEAR(TODAY()),
+            MONTH(TODAY()) + 1,
+            1
+        ) - 1) - 2,
+
+        /* else it&apos;s already a weekday, just use it */
+        DATE(
+            YEAR(TODAY()),
+            MONTH(TODAY()) + 1,
+            1
+        ) - 1
+    )
+), NULL))</formula>
+    <label>Due Date</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Date</type>
+</CustomField>

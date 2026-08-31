@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Question_Type__c</fullName>
+    <label>Question Type</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Single Select Response</fullName>
+                <default>false</default>
+                <label>Single Select Response</label>
+            </value>
+            <value>
+                <fullName>Multiple Select Response</fullName>
+                <default>false</default>
+                <label>Multiple Select Response</label>
+            </value>
+            <value>
+                <fullName>Short Text Response</fullName>
+                <default>false</default>
+                <label>Short Text Response</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

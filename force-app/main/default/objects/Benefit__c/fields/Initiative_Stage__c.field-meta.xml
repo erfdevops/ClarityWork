@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Initiative_Stage__c</fullName>
+    <label>Initiative Stage</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <controllingField>Benefit_Sub_Type__c</controllingField>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>On Hold</fullName>
+                <default>false</default>
+                <label>On Hold</label>
+            </value>
+            <value>
+                <fullName>Death Notice</fullName>
+                <default>true</default>
+                <label>Death Notice</label>
+            </value>
+            <value>
+                <fullName>Survivor Payments - Post-Ret Death(Benefits)</fullName>
+                <default>false</default>
+                <label>Survivor Payments - Post-Ret Death(Benefits)</label>
+            </value>
+            <value>
+                <fullName>Survivor Payments - Post-Ret Death(Accounting)</fullName>
+                <default>false</default>
+                <label>Survivor Payments - Post-Ret Death(Accounting)</label>
+            </value>
+            <value>
+                <fullName>Survivor Payments - Pre-Ret Death(Benefits)</fullName>
+                <default>false</default>
+                <label>Survivor Payments - Pre-Ret Death(Benefits)</label>
+            </value>
+            <value>
+                <fullName>Survivor Payments - Pre-Ret Death(Accounting)</fullName>
+                <default>false</default>
+                <label>Survivor Payments - Pre-Ret Death(Accounting)</label>
+            </value>
+            <value>
+                <fullName>Estate Payments - Post-Ret Death(Benefits)</fullName>
+                <default>false</default>
+                <label>Estate Payments - Post-Ret Death(Benefits)</label>
+            </value>
+            <value>
+                <fullName>Estate Payments - Post-Ret Death(Accounting)</fullName>
+                <default>false</default>
+                <label>Estate Payments - Post-Ret Death(Accounting)</label>
+            </value>
+            <value>
+                <fullName>Estate Payments - Pre-Ret Death(Benefits)</fullName>
+                <default>false</default>
+                <label>Estate Payments - Pre-Ret Death(Benefits)</label>
+            </value>
+            <value>
+                <fullName>Estate Payments - Pre-Ret Death(Accounting)</fullName>
+                <default>false</default>
+                <label>Estate Payments - Pre-Ret Death(Accounting)</label>
+            </value>
+            <value>
+                <fullName>Benefit Calculation</fullName>
+                <default>false</default>
+                <label>Benefit Calculation</label>
+            </value>
+            <value>
+                <fullName>LWOP Audit</fullName>
+                <default>false</default>
+                <label>LWOP Audit</label>
+            </value>
+            <value>
+                <fullName>Peer Review</fullName>
+                <default>false</default>
+                <label>Peer Review</label>
+            </value>
+            <value>
+                <fullName>Benefit Approval</fullName>
+                <default>false</default>
+                <label>Benefit Approval</label>
+            </value>
+            <value>
+                <fullName>Member Doctors Appointment</fullName>
+                <default>false</default>
+                <label>Member Doctors Appointment</label>
+            </value>
+            <value>
+                <fullName>Member Status Confirmation</fullName>
+                <default>false</default>
+                <label>Member Status Confirmation</label>
+            </value>
+            <value>
+                <fullName>Completed</fullName>
+                <default>false</default>
+                <label>Completed</label>
+            </value>
+        </valueSetDefinition>
+        <valueSettings>
+            <controllingFieldValue>Estate Payments - Post-Ret Death</controllingFieldValue>
+            <controllingFieldValue>Estate Payments - Pre-Ret Death</controllingFieldValue>
+            <controllingFieldValue>Survivor Payments - Post-Ret Death</controllingFieldValue>
+            <controllingFieldValue>Survivor Payments - Pre-Ret Death</controllingFieldValue>
+            <controllingFieldValue>Regular Retirement</controllingFieldValue>
+            <controllingFieldValue>Disability</controllingFieldValue>
+            <controllingFieldValue>Term Vested</controllingFieldValue>
+            <controllingFieldValue>QDRO</controllingFieldValue>
+            <controllingFieldValue>Deferred Calculations</controllingFieldValue>
+            <valueName>On Hold</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Estate Payments - Post-Ret Death</controllingFieldValue>
+            <controllingFieldValue>Estate Payments - Pre-Ret Death</controllingFieldValue>
+            <controllingFieldValue>Survivor Payments - Post-Ret Death</controllingFieldValue>
+            <controllingFieldValue>Survivor Payments - Pre-Ret Death</controllingFieldValue>
+            <valueName>Death Notice</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Estate Payments - Post-Ret Death</controllingFieldValue>
+            <valueName>Estate Payments - Post-Ret Death(Benefits)</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Estate Payments - Post-Ret Death</controllingFieldValue>
+            <valueName>Estate Payments - Post-Ret Death(Accounting)</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Estate Payments - Post-Ret Death</controllingFieldValue>
+            <controllingFieldValue>Estate Payments - Pre-Ret Death</controllingFieldValue>
+            <controllingFieldValue>Survivor Payments - Post-Ret Death</controllingFieldValue>
+            <controllingFieldValue>Survivor Payments - Pre-Ret Death</controllingFieldValue>
+            <controllingFieldValue>Regular Retirement</controllingFieldValue>
+            <controllingFieldValue>Disability</controllingFieldValue>
+            <controllingFieldValue>Term Vested</controllingFieldValue>
+            <controllingFieldValue>QDRO</controllingFieldValue>
+            <controllingFieldValue>Deferred Calculations</controllingFieldValue>
+            <valueName>Completed</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Estate Payments - Pre-Ret Death</controllingFieldValue>
+            <valueName>Estate Payments - Pre-Ret Death(Benefits)</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Estate Payments - Pre-Ret Death</controllingFieldValue>
+            <valueName>Estate Payments - Pre-Ret Death(Accounting)</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Survivor Payments - Post-Ret Death</controllingFieldValue>
+            <valueName>Survivor Payments - Post-Ret Death(Benefits)</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Survivor Payments - Post-Ret Death</controllingFieldValue>
+            <valueName>Survivor Payments - Post-Ret Death(Accounting)</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Survivor Payments - Pre-Ret Death</controllingFieldValue>
+            <valueName>Survivor Payments - Pre-Ret Death(Benefits)</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Survivor Payments - Pre-Ret Death</controllingFieldValue>
+            <valueName>Survivor Payments - Pre-Ret Death(Accounting)</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Regular Retirement</controllingFieldValue>
+            <controllingFieldValue>Disability</controllingFieldValue>
+            <controllingFieldValue>Term Vested</controllingFieldValue>
+            <controllingFieldValue>QDRO</controllingFieldValue>
+            <controllingFieldValue>Deferred Calculations</controllingFieldValue>
+            <valueName>Benefit Calculation</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Regular Retirement</controllingFieldValue>
+            <controllingFieldValue>Disability</controllingFieldValue>
+            <controllingFieldValue>Term Vested</controllingFieldValue>
+            <controllingFieldValue>QDRO</controllingFieldValue>
+            <controllingFieldValue>Deferred Calculations</controllingFieldValue>
+            <valueName>LWOP Audit</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Regular Retirement</controllingFieldValue>
+            <controllingFieldValue>Disability</controllingFieldValue>
+            <controllingFieldValue>Term Vested</controllingFieldValue>
+            <controllingFieldValue>QDRO</controllingFieldValue>
+            <controllingFieldValue>Deferred Calculations</controllingFieldValue>
+            <valueName>Peer Review</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Regular Retirement</controllingFieldValue>
+            <controllingFieldValue>Disability</controllingFieldValue>
+            <controllingFieldValue>Term Vested</controllingFieldValue>
+            <controllingFieldValue>QDRO</controllingFieldValue>
+            <controllingFieldValue>Deferred Calculations</controllingFieldValue>
+            <valueName>Benefit Approval</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Disability</controllingFieldValue>
+            <valueName>Member Doctors Appointment</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Disability</controllingFieldValue>
+            <valueName>Member Status Confirmation</valueName>
+        </valueSettings>
+    </valueSet>
+</CustomField>

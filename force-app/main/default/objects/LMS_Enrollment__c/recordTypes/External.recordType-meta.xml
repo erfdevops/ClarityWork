@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>External</fullName>
+    <active>true</active>
+    <description>Enroll for an external person (contact) of the role types, Participant, Trainer, Mentor or Guest Speaker</description>
+    <label>External</label>
+    <picklistValues>
+        <picklist>Enrollment_Role__c</picklist>
+        <values>
+            <fullName>Guest Speaker</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Mentor</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Participant</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Trainer</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Status__c</picklist>
+        <values>
+            <fullName>Completed</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>In Progress</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Unenrolled</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+</RecordType>

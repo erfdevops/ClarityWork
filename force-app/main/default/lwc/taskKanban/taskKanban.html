@@ -1,0 +1,1369 @@
+<template>
+    <lightning-card>
+        <div slot="title">
+            <lightning-icon icon-name="standard:task" size="small" class="slds-m-right_x-small"></lightning-icon>
+            My Tasks
+        </div>
+        <div slot="actions">
+            <lightning-button-group>
+                <lightning-button label="New Task" icon-name="utility:add" onclick={handleNewTask}></lightning-button>
+                <lightning-button label={selectModeLabel} icon-name="utility:multi_select_checkbox" onclick={handleToggleSelectMode}></lightning-button>
+                <lightning-button label="Export" icon-name="utility:download" onclick={handleOpenExportModal}></lightning-button>
+                <lightning-button label="Submit to Initiative Stage" icon-name="utility:upload" onclick={handleOpenSubmitModal}></lightning-button>
+                <lightning-button label="Report" icon-name="utility:chart" onclick={handleOpenReport}></lightning-button>
+                <lightning-button label="Recurring Tasks" icon-name="utility:refresh" onclick={handleOpenRecurring}></lightning-button>
+                <lightning-button label="Preferences" icon-name="utility:settings" onclick={handleOpenPrefs}></lightning-button>
+            </lightning-button-group>
+        </div>
+
+        <div class="slds-p-horizontal_medium slds-p-bottom_small">
+            <div class="slds-grid slds-gutters slds-wrap">
+                <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
+                    <lightning-combobox
+                        name="project"
+                        label="Project"
+                        value={selectedProjectId}
+                        placeholder="All Projects"
+                        options={projectOptions}
+                        onchange={handleProjectChange}>
+                    </lightning-combobox>
+                </div>
+                <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
+                    <lightning-combobox
+                        name="smartGoalFilter"
+                        label="Smart Goal"
+                        value={selectedSmartGoalId}
+                        placeholder="All Smart Goals"
+                        options={smartGoalFilterOptions}
+                        onchange={handleSmartGoalFilterChange}>
+                    </lightning-combobox>
+                </div>
+                <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
+                    <lightning-combobox
+                        name="month"
+                        label="Month"
+                        value={selectedMonth}
+                        options={monthOptions}
+                        onchange={handleMonthChange}>
+                    </lightning-combobox>
+                </div>
+                <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
+                    <lightning-combobox
+                        name="priorityFilter"
+                        label="Priority"
+                        value={selectedPriority}
+                        placeholder="All Priorities"
+                        options={priorityFilterOptions}
+                        onchange={handlePriorityFilterChange}>
+                    </lightning-combobox>
+                </div>
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-5">
+                    <div class="slds-form-element">
+                        <label class="slds-form-element__label">Search</label>
+                        <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_left">
+                            <lightning-icon icon-name="utility:search" size="xx-small" class="slds-icon slds-input__icon slds-input__icon_left slds-icon-text-default"></lightning-icon>
+                            <input type="search" class="slds-input" placeholder="Subject, task ID, project..." value={searchKeyword} oninput={handleSearchInput} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Action Bar -->
+        <template if:true={selectMode}>
+            <div class="bulk-bar">
+                <span class="bulk-bar-count">{selectionCount} selected</span>
+                <lightning-button-group>
+                    <lightning-button label="All" onclick={handleSelectAll}></lightning-button>
+                    <lightning-button label="Clear" onclick={handleClearSelection}></lightning-button>
+                </lightning-button-group>
+                <template if:true={hasSelection}>
+                    <lightning-combobox
+                        label=""
+                        placeholder="Move to status..."
+                        options={bulkStatusOptions}
+                        onchange={handleBulkStatusChange}
+                        disabled={bulkLoading}
+                        class="bulk-status-picker">
+                    </lightning-combobox>
+                </template>
+                <template if:true={bulkLoading}>
+                    <lightning-spinner alternative-text="Updating" size="small"></lightning-spinner>
+                </template>
+            </div>
+        </template>
+
+        <!-- Kanban Board -->
+        <div class="kanban-board slds-p-bottom_medium">
+            <!-- Queue -->
+            <div class="kanban-column"
+                 data-status="Queue"
+                 ondragover={handleDragOver}
+                 ondragleave={handleDragLeave}
+                 ondrop={handleDrop}>
+                <div class="kanban-header kanban-header_queue">
+                    <span class="kanban-header-label">Queue</span>
+                    <lightning-badge label={queueCount} class="slds-m-left_x-small"></lightning-badge>
+                </div>
+                <div class="sort-bar">
+                    <template for:each={queueSortOptions} for:item="opt">
+                        <span key={opt.value} class={opt.cls} data-field={opt.value} data-col={opt.col} onclick={handleSortField}>{opt.label}</span>
+                    </template>
+                </div>
+                <template for:each={queueTasks} for:item="task">
+                    <div key={task.Id}
+                         class={task.cardClass}
+                         draggable="true"
+                         data-id={task.Id}
+                         ondragstart={handleDragStart}
+                         ondragend={handleDragEnd}
+                         onclick={handleCardClick}>
+                        <template if:true={selectMode}>
+                            <div class="card-select-row">
+                                <input type="checkbox" class="card-checkbox" checked={task.isSelected} />
+                            </div>
+                        </template>
+                        <div class="card-top-row">
+                            <span class="card-number">{task.Task_Number__c}</span>
+                            <span class="card-created">{task.formattedCreatedDate}</span>
+                        </div>
+                        <div class="card-title">
+                            {task.Subject}
+                            <template if:true={task.IsRecurrence}>
+                                <span class="recurring-instance-badge" title="Salesforce recurring task">&#x21BB;</span>
+                            </template>
+                        </div>
+                        <template if:true={task.Project__r}>
+                            <div class="card-meta">{task.Project__r.Name}</div>
+                        </template>
+                        <template if:true={task.ActivityDate}>
+                            <div class="card-date">
+                                <lightning-icon icon-name="utility:event" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                {task.ActivityDate}
+                            </div>
+                        </template>
+                        <div class="card-footer">
+                            <template if:true={task.priorityHigh}>
+                                <span class="priority-badge priority-high">High</span>
+                            </template>
+                            <template if:true={task.priorityLow}>
+                                <span class="priority-badge priority-low">Low</span>
+                            </template>
+                            <a class="card-link card-link_edit" data-id={task.Id} onclick={handleEdit}>Edit</a>
+                            <a class="card-link card-link_delete" data-id={task.Id} onclick={handleDeleteClick}>Delete</a>
+                        </div>
+                    </div>
+                </template>
+                <template if:false={queueTasks.length}>
+                    <div class="kanban-empty">No tasks</div>
+                </template>
+            </div>
+
+            <!-- In Progress -->
+            <div class="kanban-column"
+                 data-status="In Progress"
+                 ondragover={handleDragOver}
+                 ondragleave={handleDragLeave}
+                 ondrop={handleDrop}>
+                <div class="kanban-header kanban-header_inprogress">
+                    <span class="kanban-header-label">In Progress</span>
+                    <lightning-badge label={inProgressCount} class="slds-m-left_x-small"></lightning-badge>
+                </div>
+                <div class="sort-bar">
+                    <template for:each={inProgressSortOptions} for:item="opt">
+                        <span key={opt.value} class={opt.cls} data-field={opt.value} data-col={opt.col} onclick={handleSortField}>{opt.label}</span>
+                    </template>
+                </div>
+                <template for:each={inProgressTasks} for:item="task">
+                    <div key={task.Id}
+                         class={task.cardClass}
+                         draggable="true"
+                         data-id={task.Id}
+                         ondragstart={handleDragStart}
+                         ondragend={handleDragEnd}
+                         onclick={handleCardClick}>
+                        <template if:true={selectMode}>
+                            <div class="card-select-row">
+                                <input type="checkbox" class="card-checkbox" checked={task.isSelected} />
+                            </div>
+                        </template>
+                        <div class="card-top-row">
+                            <span class="card-number">{task.Task_Number__c}</span>
+                            <span class="card-created">{task.formattedCreatedDate}</span>
+                        </div>
+                        <div class="card-title">
+                            {task.Subject}
+                            <template if:true={task.IsRecurrence}>
+                                <span class="recurring-instance-badge" title="Salesforce recurring task">&#x21BB;</span>
+                            </template>
+                        </div>
+                        <template if:true={task.Project__r}>
+                            <div class="card-meta">{task.Project__r.Name}</div>
+                        </template>
+                        <template if:true={task.ActivityDate}>
+                            <div class="card-date">
+                                <lightning-icon icon-name="utility:event" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                {task.ActivityDate}
+                            </div>
+                        </template>
+                        <div class="card-footer">
+                            <template if:true={task.priorityHigh}>
+                                <span class="priority-badge priority-high">High</span>
+                            </template>
+                            <template if:true={task.priorityLow}>
+                                <span class="priority-badge priority-low">Low</span>
+                            </template>
+                            <a class="card-link card-link_edit" data-id={task.Id} onclick={handleEdit}>Edit</a>
+                            <a class="card-link card-link_delete" data-id={task.Id} onclick={handleDeleteClick}>Delete</a>
+                        </div>
+                    </div>
+                </template>
+                <template if:false={inProgressTasks.length}>
+                    <div class="kanban-empty">No tasks</div>
+                </template>
+            </div>
+
+            <!-- Complete -->
+            <div class="kanban-column"
+                 data-status="Complete"
+                 ondragover={handleDragOver}
+                 ondragleave={handleDragLeave}
+                 ondrop={handleDrop}>
+                <div class="kanban-header kanban-header_complete">
+                    <span class="kanban-header-label">Complete</span>
+                    <lightning-badge label={completeCount} class="slds-m-left_x-small"></lightning-badge>
+                </div>
+                <div class="sort-bar">
+                    <template for:each={completeSortOptions} for:item="opt">
+                        <span key={opt.value} class={opt.cls} data-field={opt.value} data-col={opt.col} onclick={handleSortField}>{opt.label}</span>
+                    </template>
+                </div>
+                <template for:each={completeTasks} for:item="task">
+                    <div key={task.Id}
+                         class={task.cardClass}
+                         draggable="true"
+                         data-id={task.Id}
+                         ondragstart={handleDragStart}
+                         ondragend={handleDragEnd}
+                         onclick={handleCardClick}>
+                        <template if:true={selectMode}>
+                            <div class="card-select-row">
+                                <input type="checkbox" class="card-checkbox" checked={task.isSelected} />
+                            </div>
+                        </template>
+                        <div class="card-top-row">
+                            <span class="card-number">{task.Task_Number__c}</span>
+                            <span class="card-created">{task.formattedCreatedDate}</span>
+                        </div>
+                        <div class="card-title">
+                            {task.Subject}
+                            <template if:true={task.IsRecurrence}>
+                                <span class="recurring-instance-badge" title="Salesforce recurring task">&#x21BB;</span>
+                            </template>
+                        </div>
+                        <template if:true={task.Project__r}>
+                            <div class="card-meta">{task.Project__r.Name}</div>
+                        </template>
+                        <template if:true={task.ActivityDate}>
+                            <div class="card-date">
+                                <lightning-icon icon-name="utility:event" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                {task.ActivityDate}
+                            </div>
+                        </template>
+                        <div class="card-footer">
+                            <template if:true={task.priorityHigh}>
+                                <span class="priority-badge priority-high">High</span>
+                            </template>
+                            <template if:true={task.priorityLow}>
+                                <span class="priority-badge priority-low">Low</span>
+                            </template>
+                            <a class="card-link card-link_edit" data-id={task.Id} onclick={handleEdit}>Edit</a>
+                            <a class="card-link card-link_delete" data-id={task.Id} onclick={handleDeleteClick}>Delete</a>
+                        </div>
+                    </div>
+                </template>
+                <template if:false={completeTasks.length}>
+                    <div class="kanban-empty">No tasks</div>
+                </template>
+            </div>
+        </div>
+    </lightning-card>
+
+    <!-- Edit Task Modal -->
+    <template if:true={showEditModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                            onclick={handleCloseEditModal}>
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                    <h2 class="slds-modal__title">Edit Task</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <lightning-input
+                        label="Subject"
+                        value={editTask.Subject}
+                        required
+                        data-field="Subject"
+                        onchange={handleEditFieldChange}>
+                    </lightning-input>
+                    <div class="slds-m-top_small smart-goal-multi">
+                        <label class="slds-form-element__label">Project(s)</label>
+                        <div class="smart-goal-chips">
+                            <template for:each={editProjectChips} for:item="chip">
+                                <span key={chip.id} class="smart-goal-chip">
+                                    {chip.label}
+                                    <button class="chip-remove" data-id={chip.id} onmousedown={handleEditProjectRemove} title="Remove">&#x00D7;</button>
+                                </span>
+                            </template>
+                        </div>
+                        <div class="assigned-search-container">
+                            <lightning-input label="" value={editProjectSearch} placeholder="Search projects..."
+                                onchange={handleEditProjectSearch} onfocus={handleEditProjectFocus}
+                                onblur={handleEditProjectBlur} autocomplete="off">
+                            </lightning-input>
+                            <template if:true={showEditProjectDropdown}>
+                                <ul class="assigned-dropdown" role="listbox">
+                                    <template for:each={filteredEditProjectOptions} for:item="opt">
+                                        <li key={opt.value} class="assigned-option" role="option"
+                                            data-id={opt.value} onmousedown={handleEditProjectSelect}>
+                                            {opt.label}
+                                        </li>
+                                    </template>
+                                    <template if:true={editProjectsEmpty}>
+                                        <li class="assigned-option assigned-option_empty" role="option">No matching projects</li>
+                                    </template>
+                                </ul>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="slds-m-top_small smart-goal-multi">
+                        <label class="slds-form-element__label">Smart Goal(s)</label>
+                        <div class="smart-goal-chips">
+                            <template for:each={editSmartGoalChips} for:item="chip">
+                                <span key={chip.id} class="smart-goal-chip">
+                                    {chip.label}
+                                    <button class="chip-remove" data-id={chip.id} onmousedown={handleEditSmartGoalRemove} title="Remove">&#x00D7;</button>
+                                </span>
+                            </template>
+                        </div>
+                        <div class="assigned-search-container">
+                            <lightning-input
+                                label=""
+                                value={editSmartGoalSearch}
+                                placeholder="Search smart goals..."
+                                onchange={handleEditSmartGoalSearch}
+                                onfocus={handleEditSmartGoalFocus}
+                                onblur={handleEditSmartGoalBlur}
+                                autocomplete="off">
+                            </lightning-input>
+                            <template if:true={showEditSmartGoalDropdown}>
+                                <ul class="assigned-dropdown" role="listbox">
+                                    <template for:each={filteredEditSmartGoalOptions} for:item="opt">
+                                        <li key={opt.value}
+                                            class="assigned-option"
+                                            role="option"
+                                            data-id={opt.value}
+                                            onmousedown={handleEditSmartGoalSelect}>
+                                            {opt.label}
+                                        </li>
+                                    </template>
+                                    <template if:true={editSmartGoalsEmpty}>
+                                        <li class="assigned-option assigned-option_empty" role="option">No matching smart goals</li>
+                                    </template>
+                                </ul>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="slds-m-top_small smart-goal-multi">
+                        <label class="slds-form-element__label">Related Task(s)</label>
+                        <div class="smart-goal-chips">
+                            <template for:each={editRelatedTaskChips} for:item="chip">
+                                <span key={chip.id} class="smart-goal-chip">
+                                    {chip.label}
+                                    <button class="chip-remove" data-id={chip.id} onmousedown={handleEditRelatedRemove} title="Remove">&#x00D7;</button>
+                                </span>
+                            </template>
+                        </div>
+                        <div class="assigned-search-container">
+                            <lightning-input
+                                label=""
+                                value={editRelatedTaskSearch}
+                                placeholder="Search tasks..."
+                                onchange={handleEditRelatedSearch}
+                                onfocus={handleEditRelatedFocus}
+                                onblur={handleEditRelatedBlur}
+                                autocomplete="off">
+                            </lightning-input>
+                            <template if:true={showEditRelatedDropdown}>
+                                <ul class="assigned-dropdown" role="listbox">
+                                    <template for:each={filteredEditRelatedOptions} for:item="opt">
+                                        <li key={opt.value}
+                                            class="assigned-option"
+                                            role="option"
+                                            data-id={opt.value}
+                                            onmousedown={handleEditRelatedSelect}>
+                                            {opt.label}
+                                        </li>
+                                    </template>
+                                    <template if:true={editRelatedTasksEmpty}>
+                                        <li class="assigned-option assigned-option_empty" role="option">No matching tasks</li>
+                                    </template>
+                                </ul>
+                            </template>
+                        </div>
+                    </div>
+                    <lightning-combobox
+                        label="Status"
+                        value={editTask.Kanban_Status__c}
+                        options={statusOptions}
+                        data-field="Kanban_Status__c"
+                        onchange={handleEditFieldChange}
+                        class="slds-m-top_small">
+                    </lightning-combobox>
+                    <lightning-combobox
+                        label="Priority"
+                        value={editTask.Priority}
+                        options={priorityOptions}
+                        data-field="Priority"
+                        onchange={handleEditFieldChange}
+                        class="slds-m-top_small">
+                    </lightning-combobox>
+                    <lightning-input
+                        type="date"
+                        label="Due Date"
+                        value={editTask.ActivityDate}
+                        data-field="ActivityDate"
+                        onchange={handleEditFieldChange}
+                        class="slds-m-top_small">
+                    </lightning-input>
+                    <div class="slds-form-element slds-m-top_small">
+                        <label class="slds-form-element__label">Description</label>
+                        <div class="slds-form-element__control mention-wrap">
+                            <textarea class="slds-textarea desc-mention-textarea edit-desc-textarea"
+                                placeholder="Description... Type @ to mention someone"
+                                oninput={handleEditDescInput}>
+                            </textarea>
+                            <template if:true={showEditDescDropdown}>
+                                <ul class="assigned-dropdown mention-dropdown" role="listbox">
+                                    <template for:each={filteredEditDescMentionUsers} for:item="u">
+                                        <li key={u.value} class="assigned-option" role="option"
+                                            data-id={u.value} data-label={u.label}
+                                            onmousedown={handleEditDescMentionSelect}>{u.label}</li>
+                                    </template>
+                                </ul>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="slds-m-top_small smart-goal-multi">
+                        <label class="slds-form-element__label">Tag(s)</label>
+                        <div class="smart-goal-chips">
+                            <template for:each={editTaskTagChips} for:item="chip">
+                                <span key={chip.id} class="smart-goal-chip">
+                                    {chip.label}
+                                    <button class="chip-remove" data-id={chip.id} onmousedown={handleEditTaskTagRemove} title="Remove">&#x00D7;</button>
+                                </span>
+                            </template>
+                        </div>
+                        <div class="assigned-search-container">
+                            <lightning-input label="" value={editTaskTagSearch} placeholder="Search or create tags..."
+                                onchange={handleEditTaskTagSearch} onfocus={handleEditTaskTagFocus}
+                                onblur={handleEditTaskTagBlur} autocomplete="off">
+                            </lightning-input>
+                            <template if:true={showEditTaskTagDropdown}>
+                                <ul class="assigned-dropdown" role="listbox">
+                                    <template for:each={filteredEditTaskTagOptions} for:item="opt">
+                                        <li key={opt.value} class="assigned-option" role="option"
+                                            data-id={opt.value} data-label={opt.label} onmousedown={handleEditTaskTagSelect}>
+                                            {opt.label}
+                                        </li>
+                                    </template>
+                                    <template if:true={editTaskTagCreateLabel}>
+                                        <li class="assigned-option assigned-option_create" role="option"
+                                            data-id="__create__" onmousedown={handleEditTaskTagSelect}>
+                                            + Create "{editTaskTagCreateLabel}"
+                                        </li>
+                                    </template>
+                                    <template if:true={editTaskTagsEmpty}>
+                                        <li class="assigned-option assigned-option_empty" role="option">No matching tags</li>
+                                    </template>
+                                </ul>
+                            </template>
+                        </div>
+                    </div>
+                    <!-- Time Spent + Assigned To -->
+                    <div class="slds-grid slds-gutters slds-m-top_small">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning-input
+                                type="number"
+                                label="Time Spent (hrs)"
+                                value={editTask.timeSpent}
+                                min="0"
+                                step="0.25"
+                                data-field="timeSpent"
+                                onchange={handleEditFieldChange}>
+                            </lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <div class="assigned-search-container">
+                                <lightning-input
+                                    label="Assigned To"
+                                    value={editAssignedLabel}
+                                    placeholder="Type to search users..."
+                                    onchange={handleEditAssignedSearch}
+                                    onfocus={handleEditAssignedFocus}
+                                    onblur={handleEditAssignedBlur}
+                                    autocomplete="off">
+                                </lightning-input>
+                                <template if:true={showEditAssignedDropdown}>
+                                    <ul class="assigned-dropdown" role="listbox">
+                                        <template for:each={filteredEditUserOptions} for:item="user">
+                                            <li key={user.value}
+                                                class="assigned-option"
+                                                role="option"
+                                                data-id={user.value}
+                                                data-label={user.label}
+                                                onmousedown={handleEditAssignedSelect}>
+                                                {user.label}
+                                            </li>
+                                        </template>
+                                        <template if:true={editFilteredUsersEmpty}>
+                                            <li class="assigned-option assigned-option_empty" role="option">No matching users</li>
+                                        </template>
+                                    </ul>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attachments -->
+                    <div class="slds-m-top_medium">
+                        <h3 class="section-header">Attachments</h3>
+                        <lightning-file-upload
+                            label=""
+                            name="taskFileUploader"
+                            accept={acceptedFormats}
+                            record-id={editTask.Id}
+                            onuploadfinished={handleUploadFinished}
+                            multiple>
+                        </lightning-file-upload>
+                        <template if:true={hasSyncedFiles}>
+                            <div class="slds-m-top_small">
+                                <p class="synced-files-label">Synced to SharePoint:</p>
+                                <template for:each={syncedFiles} for:item="sf">
+                                    <div key={sf.Id} class="synced-file-item">
+                                        <lightning-icon icon-name="utility:attach" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                        <a href={sf.SharePoint_URL__c} target="_blank">{sf.File_Name__c}</a>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Discussion -->
+                    <div class="slds-m-top_medium">
+                        <h3 class="section-header">Discussion</h3>
+                        <template for:each={editComments} for:item="comment">
+                            <div key={comment.Id} class="comment-item">
+                                <div class="comment-meta">
+                                    <span class="comment-author">{comment.CreatedBy.Name}</span>
+                                    <span class="comment-date">{comment.formattedDate}</span>
+                                    <button class="comment-delete-btn" data-id={comment.Id} onclick={handleDeleteComment} title="Delete">&#x00D7;</button>
+                                </div>
+                                <div class="comment-body">{comment.Comment__c}</div>
+                            </div>
+                        </template>
+                        <template if:false={hasComments}>
+                            <p class="comment-empty">No discussion yet.</p>
+                        </template>
+                        <div class="slds-m-top_x-small">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label">Add to Discussion</label>
+                                <div class="slds-form-element__control mention-wrap">
+                                    <textarea
+                                        class="slds-textarea mention-textarea"
+                                        placeholder="Write a comment... Type @ to mention someone"
+                                        oninput={handleCommentInput}>
+                                    </textarea>
+                                    <template if:true={showMentionDropdown}>
+                                        <ul class="assigned-dropdown mention-dropdown" role="listbox">
+                                            <template for:each={filteredMentionUsers} for:item="u">
+                                                <li key={u.value}
+                                                    class="assigned-option"
+                                                    role="option"
+                                                    data-id={u.value}
+                                                    data-label={u.label}
+                                                    onmousedown={handleMentionSelect}>
+                                                    {u.label}
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="slds-m-top_x-small">
+                                <lightning-button label="Post Comment" onclick={handleAddComment}></lightning-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <footer class="custom-modal-footer">
+                    <lightning-button label="Cancel" onclick={handleCloseEditModal}></lightning-button>
+                    <lightning-button label="Save" variant="brand" onclick={handleSaveEdit}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <!-- Delete Confirmation Modal -->
+    <template if:true={showDeleteConfirm}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 class="slds-modal__title">Delete Task</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <p>Are you sure you want to delete this task? This cannot be undone.</p>
+                </div>
+                <footer class="custom-modal-footer">
+                    <lightning-button label="Cancel" onclick={handleDeleteCancel}></lightning-button>
+                    <lightning-button label="Delete" variant="destructive" onclick={handleDeleteConfirm}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <!-- New Task Modal -->
+    <template if:true={showNewTaskModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                            onclick={handleCloseModal}>
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                    <h2 class="slds-modal__title">New Task</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+
+
+                    <!-- Task form (always visible) -->
+                        <lightning-input
+                            label="Subject"
+                            value={newTask.Subject}
+                            required
+                            data-field="Subject"
+                            onchange={handleFieldChange}>
+                        </lightning-input>
+                        <div class="slds-m-top_small smart-goal-multi">
+                            <label class="slds-form-element__label">Project(s)</label>
+                            <div class="smart-goal-chips">
+                                <template for:each={newProjectChips} for:item="chip">
+                                    <span key={chip.id} class="smart-goal-chip">
+                                        {chip.label}
+                                        <button class="chip-remove" data-id={chip.id} onmousedown={handleNewProjectRemove} title="Remove">&#x00D7;</button>
+                                    </span>
+                                </template>
+                            </div>
+                            <div class="assigned-search-container">
+                                <lightning-input label="" value={newProjectSearch} placeholder="Search projects..."
+                                    onchange={handleNewProjectSearch} onfocus={handleNewProjectFocus}
+                                    onblur={handleNewProjectBlur} autocomplete="off">
+                                </lightning-input>
+                                <template if:true={showNewProjectDropdown}>
+                                    <ul class="assigned-dropdown" role="listbox">
+                                        <template for:each={filteredNewProjectOptions} for:item="opt">
+                                            <li key={opt.value} class="assigned-option" role="option"
+                                                data-id={opt.value} onmousedown={handleNewProjectSelect}>
+                                                {opt.label}
+                                            </li>
+                                        </template>
+                                        <template if:true={newProjectsEmpty}>
+                                            <li class="assigned-option assigned-option_empty" role="option">No matching projects</li>
+                                        </template>
+                                    </ul>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="slds-m-top_small smart-goal-multi">
+                            <label class="slds-form-element__label">Smart Goal(s)</label>
+                            <div class="smart-goal-chips">
+                                <template for:each={newSmartGoalChips} for:item="chip">
+                                    <span key={chip.id} class="smart-goal-chip">
+                                        {chip.label}
+                                        <button class="chip-remove" data-id={chip.id} onmousedown={handleNewSmartGoalRemove} title="Remove">&#x00D7;</button>
+                                    </span>
+                                </template>
+                            </div>
+                            <div class="assigned-search-container">
+                                <lightning-input
+                                    label=""
+                                    value={newSmartGoalSearch}
+                                    placeholder="Search smart goals..."
+                                    onchange={handleNewSmartGoalSearch}
+                                    onfocus={handleNewSmartGoalFocus}
+                                    onblur={handleNewSmartGoalBlur}
+                                    autocomplete="off">
+                                </lightning-input>
+                                <template if:true={showNewSmartGoalDropdown}>
+                                    <ul class="assigned-dropdown" role="listbox">
+                                        <template for:each={filteredNewSmartGoalOptions} for:item="opt">
+                                            <li key={opt.value}
+                                                class="assigned-option"
+                                                role="option"
+                                                data-id={opt.value}
+                                                onmousedown={handleNewSmartGoalSelect}>
+                                                {opt.label}
+                                            </li>
+                                        </template>
+                                        <template if:true={newSmartGoalsEmpty}>
+                                            <li class="assigned-option assigned-option_empty" role="option">No matching smart goals</li>
+                                        </template>
+                                    </ul>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="slds-m-top_small smart-goal-multi">
+                            <label class="slds-form-element__label">Related Task(s)</label>
+                            <div class="smart-goal-chips">
+                                <template for:each={newRelatedTaskChips} for:item="chip">
+                                    <span key={chip.id} class="smart-goal-chip">
+                                        {chip.label}
+                                        <button class="chip-remove" data-id={chip.id} onmousedown={handleNewRelatedRemove} title="Remove">&#x00D7;</button>
+                                    </span>
+                                </template>
+                            </div>
+                            <div class="assigned-search-container">
+                                <lightning-input
+                                    label=""
+                                    value={newRelatedTaskSearch}
+                                    placeholder="Search tasks..."
+                                    onchange={handleNewRelatedSearch}
+                                    onfocus={handleNewRelatedFocus}
+                                    onblur={handleNewRelatedBlur}
+                                    autocomplete="off">
+                                </lightning-input>
+                                <template if:true={showNewRelatedDropdown}>
+                                    <ul class="assigned-dropdown" role="listbox">
+                                        <template for:each={filteredNewRelatedOptions} for:item="opt">
+                                            <li key={opt.value}
+                                                class="assigned-option"
+                                                role="option"
+                                                data-id={opt.value}
+                                                onmousedown={handleNewRelatedSelect}>
+                                                {opt.label}
+                                            </li>
+                                        </template>
+                                        <template if:true={newRelatedTasksEmpty}>
+                                            <li class="assigned-option assigned-option_empty" role="option">No matching tasks</li>
+                                        </template>
+                                    </ul>
+                                </template>
+                            </div>
+                        </div>
+                        <lightning-combobox
+                            label="Status"
+                            value={newTask.Kanban_Status__c}
+                            options={statusOptions}
+                            data-field="Kanban_Status__c"
+                            onchange={handleFieldChange}
+                            class="slds-m-top_small">
+                        </lightning-combobox>
+                        <lightning-combobox
+                            label="Priority"
+                            value={newTask.Priority}
+                            options={priorityOptions}
+                            data-field="Priority"
+                            onchange={handleFieldChange}
+                            class="slds-m-top_small">
+                        </lightning-combobox>
+                        <lightning-input
+                            type="date"
+                            label="Due Date"
+                            value={newTask.ActivityDate}
+                            data-field="ActivityDate"
+                            onchange={handleFieldChange}
+                            class="slds-m-top_small">
+                        </lightning-input>
+                        <div class="slds-form-element slds-m-top_small">
+                            <label class="slds-form-element__label">Description</label>
+                            <div class="slds-form-element__control mention-wrap">
+                                <textarea class="slds-textarea desc-mention-textarea new-desc-textarea"
+                                    placeholder="Description... Type @ to mention someone"
+                                    oninput={handleNewDescInput}>
+                                </textarea>
+                                <template if:true={showNewDescDropdown}>
+                                    <ul class="assigned-dropdown mention-dropdown" role="listbox">
+                                        <template for:each={filteredNewDescMentionUsers} for:item="u">
+                                            <li key={u.value} class="assigned-option" role="option"
+                                                data-id={u.value} data-label={u.label}
+                                                onmousedown={handleNewDescMentionSelect}>{u.label}</li>
+                                        </template>
+                                    </ul>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="slds-m-top_small smart-goal-multi">
+                            <label class="slds-form-element__label">Tag(s)</label>
+                            <div class="smart-goal-chips">
+                                <template for:each={newTaskTagChips} for:item="chip">
+                                    <span key={chip.id} class="smart-goal-chip">
+                                        {chip.label}
+                                        <button class="chip-remove" data-id={chip.id} onmousedown={handleNewTaskTagRemove} title="Remove">&#x00D7;</button>
+                                    </span>
+                                </template>
+                            </div>
+                            <div class="assigned-search-container">
+                                <lightning-input label="" value={newTaskTagSearch} placeholder="Search or create tags..."
+                                    onchange={handleNewTaskTagSearch} onfocus={handleNewTaskTagFocus}
+                                    onblur={handleNewTaskTagBlur} autocomplete="off">
+                                </lightning-input>
+                                <template if:true={showNewTaskTagDropdown}>
+                                    <ul class="assigned-dropdown" role="listbox">
+                                        <template for:each={filteredNewTaskTagOptions} for:item="opt">
+                                            <li key={opt.value} class="assigned-option" role="option"
+                                                data-id={opt.value} data-label={opt.label} onmousedown={handleNewTaskTagSelect}>
+                                                {opt.label}
+                                            </li>
+                                        </template>
+                                        <template if:true={newTaskTagCreateLabel}>
+                                            <li class="assigned-option assigned-option_create" role="option"
+                                                data-id="__create__" onmousedown={handleNewTaskTagSelect}>
+                                                + Create "{newTaskTagCreateLabel}"
+                                            </li>
+                                        </template>
+                                        <template if:true={newTaskTagsEmpty}>
+                                            <li class="assigned-option assigned-option_empty" role="option">No matching tags</li>
+                                        </template>
+                                    </ul>
+                                </template>
+                            </div>
+                        </div>
+                        <!-- Time Spent + Assigned To -->
+                        <div class="slds-grid slds-gutters slds-m-top_small">
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input
+                                    type="number"
+                                    label="Time Spent (hrs)"
+                                    value={newTask.timeSpent}
+                                    min="0"
+                                    step="0.25"
+                                    data-field="timeSpent"
+                                    onchange={handleFieldChange}>
+                                </lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="assigned-search-container">
+                                    <lightning-input
+                                        label="Assigned To"
+                                        value={newAssignedLabel}
+                                        placeholder="Type to search users..."
+                                        onchange={handleNewAssignedSearch}
+                                        onfocus={handleNewAssignedFocus}
+                                        onblur={handleNewAssignedBlur}
+                                        autocomplete="off">
+                                    </lightning-input>
+                                    <template if:true={showNewAssignedDropdown}>
+                                        <ul class="assigned-dropdown" role="listbox">
+                                            <template for:each={filteredNewUserOptions} for:item="user">
+                                                <li key={user.value}
+                                                    class="assigned-option"
+                                                    role="option"
+                                                    data-id={user.value}
+                                                    data-label={user.label}
+                                                    onmousedown={handleNewAssignedSelect}>
+                                                    {user.label}
+                                                </li>
+                                            </template>
+                                            <template if:true={newFilteredUsersEmpty}>
+                                                <li class="assigned-option assigned-option_empty" role="option">No matching users</li>
+                                            </template>
+                                        </ul>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                    <!-- Attachments -->
+                    <template if:false={newTaskSaved}>
+                        <div class="slds-m-top_small">
+                            <lightning-input
+                                type="toggle"
+                                label="Attachments?"
+                                message-toggle-active="Yes"
+                                message-toggle-inactive="No"
+                                checked={newTaskHasAttachments}
+                                onchange={handleNewTaskHasAttachmentsChange}>
+                            </lightning-input>
+                        </div>
+                    </template>
+                    <template if:true={newTaskSaved}>
+                        <div class="new-task-success slds-m-top_small slds-m-bottom_x-small">
+                            <lightning-icon icon-name="utility:success" variant="success" size="small" class="slds-m-right_x-small"></lightning-icon>
+                            <span>Task created! Attach files below, then click Done.</span>
+                        </div>
+                        <lightning-file-upload
+                            label=""
+                            name="newTaskFileUploader"
+                            accept={acceptedFormats}
+                            record-id={_newTaskSavedId}
+                            onuploadfinished={handleNewTaskUploadFinished}
+                            multiple>
+                        </lightning-file-upload>
+                    </template>
+
+                </div>
+                <footer class="custom-modal-footer">
+                    <template if:false={newTaskSaved}>
+                        <lightning-button label="Cancel" onclick={handleCloseModal}></lightning-button>
+                        <lightning-button label="Save" variant="brand" onclick={handleSaveTask}></lightning-button>
+                    </template>
+                    <template if:true={newTaskSaved}>
+                        <span></span>
+                        <lightning-button label="Done" variant="brand" onclick={handleNewTaskDone}></lightning-button>
+                    </template>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <!-- Recurring Task Templates Modal -->
+    <template if:true={showRecurringModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                            onclick={handleCloseRecurring}>
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                    <h2 class="slds-modal__title">Recurring Task Templates</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+
+                    <!-- Template list -->
+                    <template if:false={showTemplateForm}>
+                        <template for:each={formattedTemplates} for:item="tmpl">
+                            <div key={tmpl.Id} class="recurring-template-row">
+                                <lightning-input
+                                    type="toggle"
+                                    label=""
+                                    checked={tmpl.Is_Active__c}
+                                    data-id={tmpl.Id}
+                                    onchange={handleToggleActive}
+                                    class="recurring-toggle">
+                                </lightning-input>
+                                <div class="recurring-template-info">
+                                    <span class="recurring-template-name">{tmpl.Subject__c}</span>
+                                    <span class="recurring-template-meta">{tmpl.frequencyLabel}</span>
+                                    <template if:true={tmpl.Project__r}>
+                                        <span class="recurring-template-meta">{tmpl.Project__r.Name}</span>
+                                    </template>
+                                    <template if:true={tmpl.Last_Spawn_Date__c}>
+                                        <span class="recurring-template-meta">Last spawned: {tmpl.Last_Spawn_Date__c}</span>
+                                    </template>
+                                </div>
+                                <div class="recurring-template-actions">
+                                    <lightning-button label="Edit" data-id={tmpl.Id} onclick={handleEditTemplate}></lightning-button>
+                                    <lightning-button label="Delete" variant="destructive-text" data-id={tmpl.Id} onclick={handleDeleteTemplate}></lightning-button>
+                                </div>
+                            </div>
+                        </template>
+                        <template if:false={recurringTemplates.length}>
+                            <p class="comment-empty">No recurring templates yet. Create one to get started.</p>
+                        </template>
+                    </template>
+
+                    <!-- Template form -->
+                    <template if:true={showTemplateForm}>
+                        <lightning-input
+                            label="Subject"
+                            value={recurringTemplateForm.Subject__c}
+                            required
+                            data-field="Subject__c"
+                            onchange={handleTemplateFieldChange}>
+                        </lightning-input>
+                        <div class="slds-m-top_small smart-goal-multi">
+                            <label class="slds-form-element__label">Project(s)</label>
+                            <div class="smart-goal-chips">
+                                <template for:each={templateProjectChips} for:item="chip">
+                                    <span key={chip.id} class="smart-goal-chip">
+                                        {chip.label}
+                                        <button class="chip-remove" data-id={chip.id} onmousedown={handleTemplateProjectRemove} title="Remove">&#x00D7;</button>
+                                    </span>
+                                </template>
+                            </div>
+                            <div class="assigned-search-container">
+                                <lightning-input label="" value={templateProjectSearch} placeholder="Search projects..."
+                                    onchange={handleTemplateProjectSearch} onfocus={handleTemplateProjectFocus}
+                                    onblur={handleTemplateProjectBlur} autocomplete="off">
+                                </lightning-input>
+                                <template if:true={showTemplateProjectDropdown}>
+                                    <ul class="assigned-dropdown" role="listbox">
+                                        <template for:each={filteredTemplateProjectOptions} for:item="opt">
+                                            <li key={opt.value} class="assigned-option" role="option"
+                                                data-id={opt.value} onmousedown={handleTemplateProjectSelect}>
+                                                {opt.label}
+                                            </li>
+                                        </template>
+                                        <template if:true={templateProjectsEmpty}>
+                                            <li class="assigned-option assigned-option_empty" role="option">No matching projects</li>
+                                        </template>
+                                    </ul>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="slds-m-top_small smart-goal-multi">
+                            <label class="slds-form-element__label">Smart Goal(s)</label>
+                            <div class="smart-goal-chips">
+                                <template for:each={templateSmartGoalChips} for:item="chip">
+                                    <span key={chip.id} class="smart-goal-chip">
+                                        {chip.label}
+                                        <button class="chip-remove" data-id={chip.id} onmousedown={handleTemplateSmartGoalRemove} title="Remove">&#x00D7;</button>
+                                    </span>
+                                </template>
+                            </div>
+                            <div class="assigned-search-container">
+                                <lightning-input
+                                    label=""
+                                    value={templateSmartGoalSearch}
+                                    placeholder="Search smart goals..."
+                                    onchange={handleTemplateSmartGoalSearch}
+                                    onfocus={handleTemplateSmartGoalFocus}
+                                    onblur={handleTemplateSmartGoalBlur}
+                                    autocomplete="off">
+                                </lightning-input>
+                                <template if:true={showTemplateSmartGoalDropdown}>
+                                    <ul class="assigned-dropdown" role="listbox">
+                                        <template for:each={filteredTemplateSmartGoalOptions} for:item="opt">
+                                            <li key={opt.value}
+                                                class="assigned-option"
+                                                role="option"
+                                                data-id={opt.value}
+                                                onmousedown={handleTemplateSmartGoalSelect}>
+                                                {opt.label}
+                                            </li>
+                                        </template>
+                                        <template if:true={templateSmartGoalsEmpty}>
+                                            <li class="assigned-option assigned-option_empty" role="option">No matching smart goals</li>
+                                        </template>
+                                    </ul>
+                                </template>
+                            </div>
+                        </div>
+                        <lightning-combobox
+                            label="Priority"
+                            value={recurringTemplateForm.Priority__c}
+                            options={priorityOptions}
+                            data-field="Priority__c"
+                            onchange={handleTemplateFieldChange}
+                            class="slds-m-top_small">
+                        </lightning-combobox>
+                        <lightning-combobox
+                            label="Frequency"
+                            value={recurringTemplateForm.frequency}
+                            options={frequencyOptions}
+                            data-field="frequency"
+                            onchange={handleTemplateFieldChange}
+                            class="slds-m-top_small">
+                        </lightning-combobox>
+                        <template if:true={isWeeklyOrBiWeekly}>
+                            <lightning-combobox
+                                label="Day of Week"
+                                value={recurringTemplateForm.spawnDay}
+                                placeholder="Monday (default)"
+                                options={spawnDayOfWeekOptions}
+                                data-field="spawnDay"
+                                onchange={handleTemplateFieldChange}
+                                class="slds-m-top_small">
+                            </lightning-combobox>
+                        </template>
+                        <template if:true={isMonthly}>
+                            <lightning-combobox
+                                label="Day of Month"
+                                value={recurringTemplateForm.spawnDay}
+                                placeholder="1st (default)"
+                                options={spawnDayOfMonthOptions}
+                                data-field="spawnDay"
+                                onchange={handleTemplateFieldChange}
+                                class="slds-m-top_small">
+                            </lightning-combobox>
+                        </template>
+                        <div class="slds-form-element slds-m-top_small">
+                            <label class="slds-form-element__label">Description</label>
+                            <div class="slds-form-element__control mention-wrap">
+                                <textarea class="slds-textarea desc-mention-textarea tmpl-desc-textarea"
+                                    placeholder="Description... Type @ to mention someone"
+                                    oninput={handleTmplDescInput}>
+                                </textarea>
+                                <template if:true={showTmplDescDropdown}>
+                                    <ul class="assigned-dropdown mention-dropdown" role="listbox">
+                                        <template for:each={filteredTmplDescMentionUsers} for:item="u">
+                                            <li key={u.value} class="assigned-option" role="option"
+                                                data-id={u.value} data-label={u.label}
+                                                onmousedown={handleTmplDescMentionSelect}>{u.label}</li>
+                                        </template>
+                                    </ul>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="slds-m-top_small smart-goal-multi">
+                            <label class="slds-form-element__label">Tag(s)</label>
+                            <div class="smart-goal-chips">
+                                <template for:each={templateTagChips} for:item="chip">
+                                    <span key={chip.id} class="smart-goal-chip">
+                                        {chip.label}
+                                        <button class="chip-remove" data-id={chip.id} onmousedown={handleTemplateTagRemove} title="Remove">&#x00D7;</button>
+                                    </span>
+                                </template>
+                            </div>
+                            <div class="assigned-search-container">
+                                <lightning-input label="" value={templateTagSearch} placeholder="Search or create tags..."
+                                    onchange={handleTemplateTagSearch} onfocus={handleTemplateTagFocus}
+                                    onblur={handleTemplateTagBlur} autocomplete="off">
+                                </lightning-input>
+                                <template if:true={showTemplateTagDropdown}>
+                                    <ul class="assigned-dropdown" role="listbox">
+                                        <template for:each={filteredTemplateTagOptions} for:item="opt">
+                                            <li key={opt.value} class="assigned-option" role="option"
+                                                data-id={opt.value} data-label={opt.label} onmousedown={handleTemplateTagSelect}>
+                                                {opt.label}
+                                            </li>
+                                        </template>
+                                        <template if:true={templateTagCreateLabel}>
+                                            <li class="assigned-option assigned-option_create" role="option"
+                                                data-id="__create__" onmousedown={handleTemplateTagSelect}>
+                                                + Create "{templateTagCreateLabel}"
+                                            </li>
+                                        </template>
+                                        <template if:true={templateTagsEmpty}>
+                                            <li class="assigned-option assigned-option_empty" role="option">No matching tags</li>
+                                        </template>
+                                    </ul>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="assigned-search-container slds-m-top_small">
+                            <lightning-input
+                                label="Assigned To"
+                                value={recurringTemplateForm.assignedLabel}
+                                placeholder="Type to search users..."
+                                onchange={handleTemplateAssignedSearch}
+                                autocomplete="off">
+                            </lightning-input>
+                            <template if:true={recurringTemplateForm.assignedLabel}>
+                                <ul class="assigned-dropdown" role="listbox">
+                                    <template for:each={filteredTemplateUserOptions} for:item="user">
+                                        <li key={user.value}
+                                            class="assigned-option"
+                                            role="option"
+                                            data-id={user.value}
+                                            data-label={user.label}
+                                            onmousedown={handleTemplateAssignedSelect}>
+                                            {user.label}
+                                        </li>
+                                    </template>
+                                </ul>
+                            </template>
+                        </div>
+                    </template>
+
+                </div>
+                <footer class="custom-modal-footer">
+                    <template if:false={showTemplateForm}>
+                        <lightning-button label="Run Now" icon-name="utility:play" onclick={handleRunRecurringNow}
+                            title="Spawn this month&#39;s tasks from all enabled templates now"></lightning-button>
+                        <lightning-button label="New Template" variant="brand" onclick={handleNewTemplate}></lightning-button>
+                    </template>
+                    <template if:true={showTemplateForm}>
+                        <lightning-button label="Back" onclick={handleCancelTemplateForm}></lightning-button>
+                        <lightning-button label="Save Template" variant="brand" onclick={handleSaveTemplate}></lightning-button>
+                    </template>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <!-- Report Modal -->
+    <template if:true={showReportModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 class="slds-modal__title slds-hyphenate">Task Report</h2>
+                    <p style="font-size:0.8rem;color:#fff;margin-top:2px;opacity:0.85;">Based on current filters · {reportStats.total} tasks</p>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+
+                    <!-- Status breakdown -->
+                    <h3 class="report-section-label">By Status</h3>
+                    <div class="report-bars">
+                        <div class="report-row">
+                            <span class="report-row-label">Queue</span>
+                            <div class="report-bar-track">
+                                <div class="report-bar report-bar_queue" style={queueBarStyle}></div>
+                            </div>
+                            <span class="report-row-count">{reportStats.queue} <span class="report-pct">({reportStats.queuePct}%)</span></span>
+                        </div>
+                        <div class="report-row">
+                            <span class="report-row-label">In Progress</span>
+                            <div class="report-bar-track">
+                                <div class="report-bar report-bar_inprogress" style={inProgressBarStyle}></div>
+                            </div>
+                            <span class="report-row-count">{reportStats.inProgress} <span class="report-pct">({reportStats.inProgressPct}%)</span></span>
+                        </div>
+                        <div class="report-row">
+                            <span class="report-row-label">Complete</span>
+                            <div class="report-bar-track">
+                                <div class="report-bar report-bar_complete" style={completeBarStyle}></div>
+                            </div>
+                            <span class="report-row-count">{reportStats.complete} <span class="report-pct">({reportStats.completePct}%)</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Priority breakdown -->
+                    <h3 class="report-section-label slds-m-top_medium">By Priority</h3>
+                    <div class="report-bars">
+                        <template for:each={reportStats.byPriority} for:item="row">
+                            <div key={row.name} class="report-row">
+                                <span class="report-row-label">{row.name}</span>
+                                <div class="report-bar-track">
+                                    <div class="report-bar report-bar_neutral" style={row.barStyle}></div>
+                                </div>
+                                <span class="report-row-count">{row.count} <span class="report-pct">({row.pct}%)</span></span>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Project breakdown -->
+                    <h3 class="report-section-label slds-m-top_medium">By Project</h3>
+                    <div class="report-bars">
+                        <template for:each={reportStats.byProject} for:item="row">
+                            <div key={row.name} class="report-row">
+                                <span class="report-row-label">{row.name}</span>
+                                <div class="report-bar-track">
+                                    <div class="report-bar report-bar_neutral" style={row.barStyle}></div>
+                                </div>
+                                <span class="report-row-count">{row.count} <span class="report-pct">({row.pct}%)</span></span>
+                            </div>
+                        </template>
+                    </div>
+
+                </div>
+                <footer class="custom-modal-footer">
+                    <lightning-button label="Close" variant="brand" onclick={handleCloseReport}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <!-- Export Modal -->
+    <template if:true={showExportModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 class="slds-modal__title slds-hyphenate">Export Tasks</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <lightning-radio-group
+                        label="File Format"
+                        options={exportFormatOptions}
+                        value={exportFormat}
+                        type="button"
+                        onchange={handleExportFormatChange}>
+                    </lightning-radio-group>
+                </div>
+                <footer class="custom-modal-footer">
+                    <lightning-button label="Cancel" onclick={handleCancelExport}></lightning-button>
+                    <lightning-button label="Download" variant="brand" onclick={handleConfirmExport}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <!-- Preferences Modal -->
+    <template if:true={showPrefsModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 class="slds-modal__title slds-hyphenate">Export Preferences</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <p class="prefs-section-label">Columns included in exports and submissions</p>
+                    <p class="prefs-hint">Changes save automatically and apply to both Export and Submit to Initiative Stage.</p>
+                    <div class="field-selector-grid slds-m-top_small">
+                        <template for:each={exportFieldSelection} for:item="field">
+                            <label key={field.key} class="field-toggle-row">
+                                <input type="checkbox"
+                                       data-key={field.key}
+                                       checked={field.enabled}
+                                       onchange={handleFieldSelectionToggle}
+                                       class="field-toggle-check" />
+                                <span class="field-toggle-label">{field.label}</span>
+                            </label>
+                        </template>
+                    </div>
+                </div>
+                <footer class="custom-modal-footer">
+                    <lightning-button label="Reset to defaults" onclick={handleResetFieldSelection}></lightning-button>
+                    <lightning-button label="Done" variant="brand" onclick={handleClosePrefs}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <!-- Submit to Initiative Stage Modal -->
+    <template if:true={showSubmitModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 class="slds-modal__title slds-hyphenate">Submit Tasks to Initiative Stage</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <template if:true={submitLoading}>
+                        <div class="slds-is-relative" style="min-height:80px;">
+                            <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                        </div>
+                    </template>
+                    <template if:false={submitLoading}>
+                        <p class="slds-m-bottom_medium" style="font-size:0.875rem;color:#3e3e3c;">
+                            The selected file will be attached to the chosen Initiative Stage.
+                        </p>
+                        <lightning-radio-group
+                            label="File Format"
+                            options={submitFormatOptions}
+                            value={submitFormat}
+                            type="button"
+                            onchange={handleSubmitFormatChange}
+                            class="slds-m-bottom_medium">
+                        </lightning-radio-group>
+                        <lightning-combobox
+                            label="Initiative Stage"
+                            value={selectedSubmitStageId}
+                            options={submitStageOptions}
+                            onchange={handleSubmitStageChange}
+                            placeholder="Select an Initiative Stage"
+                            dropdown-alignment="auto">
+                        </lightning-combobox>
+                    </template>
+                </div>
+                <footer class="custom-modal-footer">
+                    <lightning-button label="Cancel" onclick={handleCancelSubmit}></lightning-button>
+                    <lightning-button
+                        label="Submit"
+                        variant="brand"
+                        onclick={handleConfirmSubmit}
+                        disabled={submitLoading}>
+                    </lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

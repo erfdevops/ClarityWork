@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Estate_Payments_Pre_Ret_Death</fullName>
+    <active>false</active>
+    <label>Estate Payments - Pre-Ret Death</label>
+    <picklistValues>
+        <picklist>Benefit_Sub_Type__c</picklist>
+        <values>
+            <fullName>Deferred Calculations</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Disability</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Estate Payments - Post-Ret Death</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Estate Payments - Pre-Ret Death</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>QDRO</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Regular Retirement</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Survivor Payments - Post-Ret Death</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Survivor Payments - Pre-Ret Death</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Term Vested</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Benefit_Type__c</picklist>
+        <values>
+            <fullName>Death Benefit</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Retirement</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Consent_Agenda_Approval_Status__c</picklist>
+        <values>
+            <fullName>Approved</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>In Progress</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Rejected</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Documentation_Collection_Status__c</picklist>
+        <values>
+            <fullName>Completed</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>In Progress</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Initial Email Sent</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Stalled</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Initiative_Stage__c</picklist>
+        <values>
+            <fullName>Death Notice</fullName>
+            <default>true</default>
+        </values>
+        <values>
+            <fullName>Estate Payments - Pre-Ret Death%28Accounting%29</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Estate Payments - Pre-Ret Death%28Benefits%29</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Method_of_Notification__c</picklist>
+        <values>
+            <fullName>Dataload from PBI</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Email</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Fax</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Phone</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Walk-In</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Peer_Review_Status__c</picklist>
+        <values>
+            <fullName>Approved</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>In Progress</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Rejected</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Source__c</picklist>
+        <values>
+            <fullName>OBT</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>STA</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Status__c</picklist>
+        <values>
+            <fullName>Completed</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Deactivated</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>In Progress</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Not Started</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+</RecordType>

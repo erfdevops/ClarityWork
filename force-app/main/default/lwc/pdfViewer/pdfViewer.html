@@ -1,0 +1,87 @@
+<template>
+    <div class="pdf-viewer-container" style={containerStyle}>
+        <!-- Loading State -->
+        <template if:true={isLoading}>
+            <div class="slds-align_absolute-center" style="height: 100%; display: flex; align-items: center; justify-content: center;">
+                <lightning-spinner alternative-text="Loading PDF..." size="medium"></lightning-spinner>
+            </div>
+        </template>
+        
+        <!-- Error State -->
+        <template if:true={error}>
+            <template if:true={hasPdfFile}>
+                <!-- Show red error box only if there is a PDF file but it failed to load -->
+                <div class="slds-box slds-theme_error">
+                    <div class="slds-text-heading_small slds-m-bottom_small">PDF Loading Error</div>
+                    <p>{error}</p>
+                </div>
+            </template>
+            <template if:false={hasPdfFile}>
+                <!-- Show gentle empty state when no PDF file exists -->
+                <div class="slds-illustration slds-illustration_small" style="text-align: center; padding: 3rem;">
+                    <div style="margin-bottom: 1rem;">
+                        <lightning-icon icon-name="doctype:pdf" size="large" variant="bare" style="color: #dddbda;"></lightning-icon>
+                    </div>
+                    <div class="slds-text-longform">
+                        <h3 class="slds-text-heading_small" style="color: #706e6b; margin-bottom: 0.5rem;">No PDF Available</h3>
+                        <p class="slds-text-body_regular" style="color: #706e6b;">No PDF file has been uploaded for this lesson yet.</p>
+                    </div>
+                </div>
+            </template>
+        </template>
+        
+        <!-- PDF Viewer -->
+        <template if:true={pdfUrl}>
+            <!-- PDF Controls -->
+            <div class="pdf-controls slds-p-horizontal_small slds-p-vertical_x-small" 
+                 style="background: #f3f2f2; border: 1px solid #d9dbdd; border-bottom: none; border-radius: 4px 4px 0 0; display: flex; align-items: center; justify-content: space-between;">
+                <div class="pdf-info">
+                    <span class="slds-text-body_small slds-text-color_weak">{fileName}</span>
+                </div>
+                <div class="pdf-actions">
+                    <lightning-button-icon 
+                        icon-name="utility:download"
+                        alternative-text="Download PDF"
+                        title="Download PDF"
+                        variant="border-filled"
+                        size="small"
+                        onclick={handleDownload}>
+                    </lightning-button-icon>
+                    <lightning-button-icon 
+                        icon-name="utility:new_window"
+                        alternative-text="Open in new window"
+                        title="Open in new window"
+                        variant="border-filled"
+                        size="small"
+                        onclick={handleOpenNewWindow}
+                        class="slds-m-left_x-small">
+                    </lightning-button-icon>
+                </div>
+            </div>
+            
+            <!-- PDF Embed - Simple structure following Salesforce article -->
+            <iframe 
+                src={pdfUrl}
+                style={iframeStyle}
+                title="PDF Viewer">
+            </iframe>
+        </template>
+        
+        <!-- No PDF State -->
+        <template if:false={pdfUrl}>
+            <template if:false={isLoading}>
+                <template if:false={error}>
+                    <div class="slds-illustration slds-illustration_small" style="text-align: center; padding: 3rem;">
+                        <div style="margin-bottom: 1rem;">
+                            <lightning-icon icon-name="doctype:pdf" size="large" variant="bare" style="color: #dddbda;"></lightning-icon>
+                        </div>
+                        <div class="slds-text-longform">
+                            <h3 class="slds-text-heading_small" style="color: #706e6b; margin-bottom: 0.5rem;">No PDF Available</h3>
+                            <p class="slds-text-body_regular" style="color: #706e6b;">No PDF file has been uploaded for this lesson.</p>
+                        </div>
+                    </div>
+                </template>
+            </template>
+        </template>
+    </div>
+</template>

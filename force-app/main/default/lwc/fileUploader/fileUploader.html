@@ -1,0 +1,210 @@
+<template>
+    <div class="file-uploader slds-card slds-m-top_medium">
+        <!-- Assignment Header -->
+        <div class="assignment-header slds-p-around_medium slds-border_bottom">
+            <div class="slds-grid slds-gutters slds-wrap">
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                    <h3 class="slds-text-heading_medium slds-m-bottom_x-small">Assignments</h3>
+                    <p class="slds-text-body_regular slds-text-color_weak">Your assignments</p>
+                    <p class="slds-text-body_small slds-text-color_weak slds-m-top_small">
+                        Information about assignment we will give here.....
+                    </p>
+                </div>
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                    <div class="assignment-dates slds-grid slds-gutters">
+                        <div class="slds-col">
+                            <div class="date-section">
+                                <p class="slds-text-body_small slds-text-color_weak">Due Date:</p>
+                                <p class="slds-text-body_regular">{assignmentDueDate}</p>
+                            </div>
+                        </div>
+                        <div class="slds-col">
+                            <div class="date-section">
+                                <p class="slds-text-body_small slds-text-color_weak">Ext. Date:</p>
+                                <p class="slds-text-body_regular slds-text-color_error">{assignmentExtensionDate}</p>
+                            </div>
+                        </div>
+                        <div class="slds-col slds-shrink-none">
+                            <div class="date-section">
+                                <p class="slds-text-body_small slds-text-color_weak">Grade</p>
+                                <p class="slds-text-heading_small">A</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assignment Files Section -->
+        <div class="slds-card__body slds-card__body_inner slds-p-around_medium">
+            
+            <!-- Check if lesson and module are available -->
+            <template if:true={allowUploads}>
+                <!-- Existing uploaded files for this assignment -->
+                <template if:true={hasExistingFiles}>
+                    <h4 class="slds-text-heading_small slds-m-bottom_small">Previously Uploaded Files</h4>
+                    <template for:each={existingFiles} for:item="file">
+                        <div key={file.id} class="assignment-file slds-m-bottom_medium">
+                            <div class="file-row" style="display: flex; align-items: center; padding: 0.5rem;">
+                                <div style="width: 100px; flex-shrink: 0;">
+                                    <div class="file-icon">
+                                        <lightning-icon icon-name="utility:file" size="medium" class="pdf-icon"></lightning-icon>
+                                    </div>
+                                </div>
+                                <div style="width: 400px; flex-shrink: 0; min-width: 0; padding: 0 0.5rem;">
+                                    <div class="file-details">
+                                        <p class="slds-text-body_regular slds-text-heading_small slds-truncate" title={file.title}>{file.title}</p>
+                                        <p class="slds-text-body_small slds-text-color_weak">{file.formattedSize}</p>
+                                    </div>
+                                </div>
+                                <div style="width: 50px; flex-shrink: 0; text-align: center;">
+                                    <lightning-button-icon 
+                                        icon-name="utility:download" 
+                                        variant="bare" 
+                                        size="small"
+                                        title="Download file"
+                                        data-file-id={file.id}
+                                        onclick={handleDownloadFile}>
+                                    </lightning-button-icon>
+                                </div>
+                                <div style="width: 200px; flex-shrink: 0; padding-left: 0.5rem;">
+                                    <p class="slds-text-body_small slds-text-color_weak assignment-info">
+                                        Uploaded: {file.uploadedBy}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+
+                <!-- Message when no files have been uploaded yet (but assignment exists) -->
+                <template if:false={hasExistingFiles}>
+                    <div class="no-files-message slds-text-align_center slds-p-around_medium">
+                        <lightning-icon icon-name="utility:info" size="small" class="slds-m-bottom_x-small"></lightning-icon>
+                        <p class="slds-text-body_small slds-text-color_weak">
+                            No files have been uploaded for this assignment yet.
+                        </p>
+                    </div>
+                </template>
+            </template>
+
+            <!-- Message when no lesson or module is available -->
+            <template if:false={allowUploads}>
+                <div class="no-assignment-message slds-text-align_center slds-p-around_large">
+                    <lightning-icon icon-name="utility:info" size="medium" class="slds-m-bottom_small"></lightning-icon>
+                    <h4 class="slds-text-heading_small slds-m-bottom_small">No Assignment Available</h4>
+                    <p class="slds-text-body_regular slds-text-color_weak">
+                        No lesson week assignment found for the current user. Please contact your instructor if you believe this is an error.
+                    </p>
+                </div>
+            </template>
+
+            <!-- Upload functionality - only show when lesson and module are available -->
+            <template if:true={allowUploads}>
+                <!-- Student Submission Section -->
+                <div class="submission-section">
+                    <!-- Uploaded Files -->
+                    <template if:true={hasFiles}>
+                        <template for:each={uploadedFiles} for:item="file">
+                            <div key={file.id} class="student-file slds-m-bottom_small">
+                                <div class="file-row slds-grid slds-gutters slds-p-around_small">
+                                    <div class="slds-col slds-shrink-none">
+                                        <div class="file-icon">
+                                            <lightning-icon icon-name="utility:file" size="medium" class="submission-icon"></lightning-icon>
+                                        </div>
+                                    </div>
+                                    <div class="slds-col slds-grow">
+                                        <div class="file-details">
+                                            <p class="slds-text-body_regular slds-text-heading_small">{file.name}</p>
+                                            <p class="slds-text-body_small slds-text-color_weak">{file.sizeFormatted}</p>
+                                        </div>
+                                    </div>
+                                    <div class="slds-col slds-shrink-none">
+                                        <template if:true={file.uploading}>
+                                            <lightning-spinner size="small"></lightning-spinner>
+                                        </template>
+                                        <template if:false={file.uploading}>
+                                            <lightning-button-icon 
+                                                icon-name="utility:download" 
+                                                variant="bare" 
+                                                size="small"
+                                                title="Download file">
+                                            </lightning-button-icon>
+                                        </template>
+                                    </div>
+                                    <div class="slds-col slds-shrink-none">
+                                        <lightning-button-icon 
+                                            icon-name="utility:delete" 
+                                            variant="bare" 
+                                            size="small"
+                                            class="delete-icon"
+                                            data-file-id={file.id}
+                                            onclick={handleRemoveFile}
+                                            title="Remove file">
+                                        </lightning-button-icon>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-4">
+                                        <p class="slds-text-body_small slds-text-color_weak slds-text-align_right">
+                                            Last Updated at: {file.lastUpdated}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+
+                    <!-- Upload Area -->
+                    <template if:false={hasFiles}>
+                        <div class="upload-area slds-p-around_large slds-text-align_center slds-m-top_medium" 
+                             ondrop={handleDrop} 
+                             ondragover={handleDragOver} 
+                             ondragenter={handleDragEnter} 
+                             ondragleave={handleDragLeave}>
+                            
+                            <lightning-icon icon-name="utility:upload" size="large" class="upload-icon slds-m-bottom_small"></lightning-icon>
+                            <h4 class="slds-text-heading_small slds-m-bottom_x-small">Upload Your Assignment</h4>
+                            <p class="slds-text-body_regular slds-text-color_weak slds-m-bottom_medium">
+                                Drag and drop files here or click to browse
+                            </p>
+                            <lightning-button 
+                                label="Browse Files" 
+                                class="browse-files-button"
+                                onclick={handleBrowseClick}>
+                            </lightning-button>
+                        </div>
+                    </template>
+
+                    <!-- Add Files Button for when files exist -->
+                    <template if:true={hasFiles}>
+                        <div class="add-files-section slds-text-align_center slds-m-top_medium">
+                            <lightning-button 
+                                label="Add More Files" 
+                                variant="neutral" 
+                                onclick={handleBrowseClick}>
+                            </lightning-button>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- File Input (Hidden) -->
+                <input type="file" 
+                       class="file-input" 
+                       multiple 
+                       accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.zip"
+                       onchange={handleFileSelect}>
+                
+                <!-- Submission Button -->
+                <template if:true={hasFiles}>
+                    <div class="submission-controls slds-border_top slds-p-top_medium slds-m-top_medium slds-text-align_center">
+                        <lightning-button 
+                            label="Submit Assignment" 
+                            variant="brand" 
+                            onclick={handleSubmitAssignment}
+                            disabled={isSubmitting}>
+                        </lightning-button>
+                    </div>
+                </template>
+            </template>
+        </div>
+    </div>
+</template>

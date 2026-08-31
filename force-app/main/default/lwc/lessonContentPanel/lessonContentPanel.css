@@ -1,0 +1,141 @@
+/* Default collapsed state - increased height to accommodate quiz */
+.slds-card {
+    height: 900px;
+    transition: height 0.3s ease-in-out;
+}
+
+/* Expanded state */
+.slds-card[data-expanded="true"] {
+    height: auto;
+    min-height: 100vh;
+}
+
+/* Content area styling - reduced min-height to give more space to quiz */
+.lesson-html-content {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 200px;
+    max-height: 300px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Expanded content styling */
+.slds-card[data-expanded="true"] .lesson-html-content {
+    overflow-y: visible;
+    height: auto;
+    min-height: auto;
+    max-height: none;
+}
+
+/* Ensure quiz panel has enough space and doesn't get cut off */
+.slds-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.slds-card .slds-p-around_medium {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Status Badge Styling */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-badge.status-completed {
+    background-color: #e6f4ea;
+    color: #137033;
+    border: 1px solid #81c995;
+}
+
+.status-badge.status-in-progress {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffc107;
+}
+
+.status-badge.status-not-started {
+    background-color: #e8eaed;
+    color: #5f6368;
+    border: 1px solid #bdc1c6;
+}
+
+.status-icon {
+    display: flex;
+    align-items: center;
+}
+
+/* Content/PDF Toggle Buttons Styling */
+::slotted(lightning-button[variant="brand"]) {
+    --sds-c-button-brand-color-background: #004e14;
+    --sds-c-button-brand-color-background-hover: #003a0f;
+    --sds-c-button-brand-color-border: #004e14;
+}
+
+lightning-button[variant="brand"] {
+    --sds-c-button-brand-color-background: #004e14;
+    --sds-c-button-brand-color-background-hover: #003a0f;
+    --sds-c-button-brand-color-border: #004e14;
+}
+
+/* Empty State Styling */
+.empty-state-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 32px;
+    text-align: center;
+    background: #ffffff;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.empty-state-image {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    margin-bottom: 24px;
+}
+
+.empty-state-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #3F3E3B;
+    margin: 0 0 12px 0;
+}
+
+.empty-state-message {
+    font-size: 14px;
+    color: #616161;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* External Score Badge Styling */
+.external-score-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    background-color: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #90caf9;
+}

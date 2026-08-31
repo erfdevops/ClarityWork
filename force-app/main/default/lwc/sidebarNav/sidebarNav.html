@@ -1,0 +1,40 @@
+<template>
+    <div class="sidebar-container">
+        <nav class="compact-nav" aria-label="Main Navigation">
+            <ul class="nav-list">
+                <template for:each={navItems} for:item="item">
+                    <li key={item.id} class="nav-item">
+                        <template if:true={item.selected}>
+                            <div class="nav-item-content active">
+                                <a href="javascript:void(0);" class="nav-link"
+                                   data-id={item.id}
+                                   onclick={handleSelect}>
+                                    <div class="nav-icon">
+                                        <img src={item.selectedImageUrl} alt={item.label} class="nav-icon-image" />
+                                    </div>
+                                    <div class="nav-label">
+                                        {item.label}
+                                    </div>
+                                </a>
+                            </div>
+                        </template>
+                        <template if:false={item.selected}>
+                            <div class="nav-item-content">
+                                <a href="javascript:void(0);" class="nav-link"
+                                   data-id={item.id}
+                                   onclick={handleSelect}>
+                                    <div class="nav-icon">
+                                        <img src={item.imageUrl} alt={item.label} class="nav-icon-image" />
+                                    </div>
+                                    <div class="nav-label">
+                                        {item.label}
+                                    </div>
+                                </a>
+                            </div>
+                        </template>
+                    </li>
+                </template>
+            </ul>
+        </nav>
+    </div>
+</template>

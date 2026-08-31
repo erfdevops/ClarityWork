@@ -1,0 +1,83 @@
+<template>
+    <div>
+        <c-navigation-bar-top onshowprofilepage={handleShowProfilePage}></c-navigation-bar-top>
+    </div>
+    <div class="layout-grid">
+        <!-- Sidebar -->
+        <div class="sidebar-container">
+            <c-sidebar-nav lwc:ref="sidebarNav" onnavchange={handleNavChange}></c-sidebar-nav>
+        </div>
+        <!-- Main Content -->
+        <div class="main-content-container">
+            <template if:true={showHomeContent}>
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col slds-size_3-of-12">
+                        <template if:true={showWeekTimeline}>
+                            <c-journey-time-line onjourneychange={handleJourneyChange} onlessonnavigation={handleLessonNavigationFromTimeline}></c-journey-time-line>
+                        </template>
+                        <template if:true={showModuleTimeline}>
+                            <c-journey-time-line-modules onjourneychange={handleJourneyChange} onlessonnavigation={handleLessonNavigationFromTimeline}></c-journey-time-line-modules>
+                        </template>
+                    </div>
+                    <div class="slds-col slds-size_9-of-12">
+                        <c-journey-overview lwc:ref="journeyOverview" onmodulenavigation={handleModuleNavigation} timeline-journey-id={selectedTimelineJourneyId}></c-journey-overview>
+                    </div>
+                </div>
+            </template>
+            <template if:true={showProgramContent}>
+                <template if:false={viewingLesson}>
+                    <div class="slds-grid slds-gutters">
+                        <div class="slds-col slds-size_3-of-12">
+                            <c-my-program-courses oncoursechange={handleCourseChange} preselected-module={preselectedModule} selected-journey-id={selectedTimelineJourneyId}></c-my-program-courses>
+                        </div>
+                        <div class="slds-col slds-size_9-of-12">
+                            <c-my-program-lessons selected-course={selectedCourse} onlessonselect={handleLessonSelect} preselected-module={preselectedModule}></c-my-program-lessons>
+                        </div>
+                    </div>
+                </template>
+                <template if:true={viewingLesson}>
+                    <div class="slds-grid slds-gutters">
+                        <div class="slds-col slds-size_3-of-12">
+                            <c-lesson-list-panel 
+                                lwc:ref="lessonListPanel"
+                                course-id={selectedCourseId} 
+                                module-assignment-id={selectedModuleAssignmentId}
+                                module-id={selectedModuleId}
+                                enrollment-id={selectedEnrollmentId}
+                                lesson-week-assignment-id={selectedLessonWeekAssignmentId}
+                                selected-course={selectedCourse}
+                                selected-lesson={selectedLesson} 
+                                onback={handleLessonBack}
+                                onlessonselect={handleLessonSelect}>
+                            </c-lesson-list-panel>
+                        </div>
+                        <div class="slds-col slds-size_9-of-12">
+                            <c-lesson-content-panel 
+                                lesson-week-assignment={selectedLesson}
+                                lesson-week-assignment-id={selectedLessonWeekAssignmentId}
+                                onquizcompleted={handleQuizCompleted}
+                                onquizretake={handleQuizRetake}
+                                onassignmentsubmitted={handleAssignmentSubmitted}>
+                            </c-lesson-content-panel>
+                        </div>
+                    </div>
+                </template>
+            </template>
+            <template if:true={showVideoContent}>
+                <c-video-poc></c-video-poc>
+            </template>
+            <template if:true={showMyProfileContent}>
+                <c-my-profile onnavigate={handleProfileNavigation}></c-my-profile>
+            </template>
+            <template if:true={showMyDocumentsModule}>
+                <c-documents-module></c-documents-module>
+            </template>
+            <template if:true={showMyResourcessModule}>
+                <c-resources-module></c-resources-module>
+            </template>
+            <template if:true={showChatterModule}>
+                <c-chatter-module></c-chatter-module>
+            </template>
+        </div>
+    </div>
+</template>

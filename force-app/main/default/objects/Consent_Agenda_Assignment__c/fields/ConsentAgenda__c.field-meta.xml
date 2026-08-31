@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ConsentAgenda__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>A Lookup (Case) relationship that links the junction record to a Consent Agenda Case record.</description>
+    <label>Consent Agenda</label>
+    <referenceTo>Case</referenceTo>
+    <relationshipLabel>Consent Agenda Assignments (Consent Agenda)</relationshipLabel>
+    <relationshipName>Consent_Agenda_Assignments1</relationshipName>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

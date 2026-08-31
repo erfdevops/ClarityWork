@@ -1,0 +1,4 @@
+.forceignore
+**/salesforce.schema
+**/jsconfig.json
+**/.eslintrc.json

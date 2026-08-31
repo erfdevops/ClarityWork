@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Module_Category__c</fullName>
+    <label>Module Category</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>MultiselectPicklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Accounting</fullName>
+                <default>false</default>
+                <label>Accounting</label>
+            </value>
+            <value>
+                <fullName>Benefits</fullName>
+                <default>false</default>
+                <label>Benefits</label>
+            </value>
+            <value>
+                <fullName>Communications</fullName>
+                <default>false</default>
+                <label>Communications</label>
+            </value>
+            <value>
+                <fullName>Customer Service</fullName>
+                <default>false</default>
+                <label>Customer Service</label>
+            </value>
+            <value>
+                <fullName>Finance</fullName>
+                <default>false</default>
+                <label>Finance</label>
+            </value>
+            <value>
+                <fullName>Information Technology</fullName>
+                <default>false</default>
+                <label>Information Technology</label>
+            </value>
+            <value>
+                <fullName>Marketing &amp; Communications</fullName>
+                <default>false</default>
+                <label>Marketing &amp; Communications</label>
+            </value>
+            <value>
+                <fullName>Operations</fullName>
+                <default>false</default>
+                <label>Operations</label>
+            </value>
+            <value>
+                <fullName>Sales</fullName>
+                <default>false</default>
+                <label>Sales</label>
+            </value>
+            <value>
+                <fullName>Product &amp; Innovation</fullName>
+                <default>false</default>
+                <label>Product &amp; Innovation</label>
+            </value>
+            <value>
+                <fullName>Education &amp; Training</fullName>
+                <default>false</default>
+                <label>Education &amp; Training</label>
+            </value>
+            <value>
+                <fullName>Legal &amp; Compliance</fullName>
+                <default>false</default>
+                <label>Legal &amp; Compliance</label>
+            </value>
+            <value>
+                <fullName>Leadership &amp; Management</fullName>
+                <default>false</default>
+                <label>Leadership &amp; Management</label>
+            </value>
+            <value>
+                <fullName>Human Resources</fullName>
+                <default>false</default>
+                <label>Human Resources</label>
+            </value>
+            <value>
+                <fullName>Pre-Retirement</fullName>
+                <default>false</default>
+                <label>Pre-Retirement</label>
+            </value>
+            <value>
+                <fullName>Benefits Submission</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Benefits Submission</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+    <visibleLines>5</visibleLines>
+</CustomField>
