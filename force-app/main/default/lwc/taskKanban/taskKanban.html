@@ -46,6 +46,30 @@
                         options={monthOptions}
                         onchange={handleMonthChange}>
                     </lightning-combobox>
+                    <template if:true={showMonthPicker}>
+                        <div class="month-picker-popup">
+                            <lightning-combobox
+                                name="pickerYear"
+                                label="Year"
+                                variant="label-hidden"
+                                value={pickerYear}
+                                options={pickerYearOptions}
+                                onchange={handlePickerYearChange}
+                                class="month-picker-year">
+                            </lightning-combobox>
+                            <lightning-combobox
+                                name="pickerMonth"
+                                label="Month"
+                                variant="label-hidden"
+                                value={pickerMonth}
+                                options={pickerMonthOptions}
+                                onchange={handlePickerMonthChange}
+                                class="month-picker-mo">
+                            </lightning-combobox>
+                            <button class="month-picker-go" onclick={handlePickerApply}>Go</button>
+                            <button class="month-picker-cancel" onclick={handleMonthPickerCancel}>Cancel</button>
+                        </div>
+                    </template>
                 </div>
                 <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
                     <lightning-combobox
@@ -86,9 +110,39 @@
                         disabled={bulkLoading}
                         class="bulk-status-picker">
                     </lightning-combobox>
+                    <button class="bulk-assign-month-btn" onclick={handleToggleBulkAssignPicker} disabled={bulkAssignLoading}>
+                        Assign to Month&#x25BE;
+                    </button>
+                </template>
+                <template if:true={showBulkAssignPicker}>
+                    <div class="bulk-assign-picker">
+                        <lightning-combobox
+                            name="bulkAssignYear"
+                            label=""
+                            variant="label-hidden"
+                            value={bulkAssignYear}
+                            options={pickerYearOptions}
+                            onchange={handleBulkAssignYearChange}
+                            class="bulk-assign-year">
+                        </lightning-combobox>
+                        <lightning-combobox
+                            name="bulkAssignMonth"
+                            label=""
+                            variant="label-hidden"
+                            value={bulkAssignMonth}
+                            options={pickerMonthOptions}
+                            onchange={handleBulkAssignMonthChange}
+                            class="bulk-assign-mo">
+                        </lightning-combobox>
+                        <button class="month-picker-go" onclick={handleBulkAssignApply} disabled={bulkAssignLoading}>Apply</button>
+                        <button class="month-picker-cancel" onclick={handleToggleBulkAssignPicker}>Cancel</button>
+                    </div>
                 </template>
                 <template if:true={bulkLoading}>
                     <lightning-spinner alternative-text="Updating" size="small"></lightning-spinner>
+                </template>
+                <template if:true={bulkAssignLoading}>
+                    <lightning-spinner alternative-text="Assigning" size="small"></lightning-spinner>
                 </template>
             </div>
         </template>
@@ -102,6 +156,9 @@
                  ondragleave={handleDragLeave}
                  ondrop={handleDrop}>
                 <div class="kanban-header kanban-header_queue">
+                    <template if:true={selectMode}>
+                        <input type="checkbox" class="col-select-all" checked={queueAllSelected} data-col="Queue" onchange={handleSelectAllColumn} title="Select all in Queue" />
+                    </template>
                     <span class="kanban-header-label">Queue</span>
                     <lightning-badge label={queueCount} class="slds-m-left_x-small"></lightning-badge>
                 </div>
@@ -166,6 +223,9 @@
                  ondragleave={handleDragLeave}
                  ondrop={handleDrop}>
                 <div class="kanban-header kanban-header_inprogress">
+                    <template if:true={selectMode}>
+                        <input type="checkbox" class="col-select-all" checked={inProgressAllSelected} data-col="In Progress" onchange={handleSelectAllColumn} title="Select all In Progress" />
+                    </template>
                     <span class="kanban-header-label">In Progress</span>
                     <lightning-badge label={inProgressCount} class="slds-m-left_x-small"></lightning-badge>
                 </div>
@@ -230,6 +290,9 @@
                  ondragleave={handleDragLeave}
                  ondrop={handleDrop}>
                 <div class="kanban-header kanban-header_complete">
+                    <template if:true={selectMode}>
+                        <input type="checkbox" class="col-select-all" checked={completeAllSelected} data-col="Complete" onchange={handleSelectAllColumn} title="Select all Complete" />
+                    </template>
                     <span class="kanban-header-label">Complete</span>
                     <lightning-badge label={completeCount} class="slds-m-left_x-small"></lightning-badge>
                 </div>
@@ -438,6 +501,25 @@
                         onchange={handleEditFieldChange}
                         class="slds-m-top_small">
                     </lightning-input>
+                    <div class="slds-form-element slds-m-top_small">
+                        <template if:false={editAssignOpen}>
+                            <button class="assign-month-link" onclick={handleToggleEditAssign}>+ Assign to month</button>
+                        </template>
+                        <template if:true={editAssignOpen}>
+                            <label class="slds-form-element__label assign-month-label">Assign to Month</label>
+                            <div class="assign-month-row">
+                                <lightning-combobox name="editAssignYear" label="" variant="label-hidden"
+                                    value={editAssignYear} options={pickerYearOptions}
+                                    onchange={handleEditAssignYearChange} class="assign-month-year">
+                                </lightning-combobox>
+                                <lightning-combobox name="editAssignMonth" label="" variant="label-hidden"
+                                    value={editAssignMonth} options={pickerMonthOptions}
+                                    onchange={handleEditAssignMonthChange} class="assign-month-mo">
+                                </lightning-combobox>
+                                <button class="month-picker-cancel" onclick={handleClearEditAssignMonth} title="Remove month assignment">Clear</button>
+                            </div>
+                        </template>
+                    </div>
                     <div class="slds-form-element slds-m-top_small">
                         <label class="slds-form-element__label">Description</label>
                         <div class="slds-form-element__control mention-wrap">
@@ -788,6 +870,25 @@
                             onchange={handleFieldChange}
                             class="slds-m-top_small">
                         </lightning-input>
+                        <div class="slds-form-element slds-m-top_small">
+                            <template if:false={newAssignOpen}>
+                                <button class="assign-month-link" onclick={handleToggleNewAssign}>+ Assign to month</button>
+                            </template>
+                            <template if:true={newAssignOpen}>
+                                <label class="slds-form-element__label assign-month-label">Assign to Month</label>
+                                <div class="assign-month-row">
+                                    <lightning-combobox name="newAssignYear" label="" variant="label-hidden"
+                                        value={newAssignYear} options={pickerYearOptions}
+                                        onchange={handleNewAssignYearChange} class="assign-month-year">
+                                    </lightning-combobox>
+                                    <lightning-combobox name="newAssignMonth" label="" variant="label-hidden"
+                                        value={newAssignMonth} options={pickerMonthOptions}
+                                        onchange={handleNewAssignMonthChange} class="assign-month-mo">
+                                    </lightning-combobox>
+                                    <button class="month-picker-cancel" onclick={handleClearNewAssign}>Clear</button>
+                                </div>
+                            </template>
+                        </div>
                         <div class="slds-form-element slds-m-top_small">
                             <label class="slds-form-element__label">Description</label>
                             <div class="slds-form-element__control mention-wrap">

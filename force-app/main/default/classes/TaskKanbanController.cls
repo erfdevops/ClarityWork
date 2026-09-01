@@ -6,7 +6,7 @@ public with sharing class TaskKanbanController {
         Date today = Date.today();
         if (String.isBlank(projectId)) {
             return [
-                SELECT Id, Subject, Kanban_Status__c, ActivityDate, Priority,
+                SELECT Id, Subject, Kanban_Status__c, ActivityDate, Assign_To_Month__c, Priority,
                        Task_Number__c, External_Link__c, Project__c, Project__r.Name,
                        Smart_Goal__c, Smart_Goal__r.Name, Smart_Goal__r.Initiative_Name__c,
                        OwnerId, Owner.Name, Description, Time_Spent__c, CreatedDate,
@@ -23,7 +23,7 @@ public with sharing class TaskKanbanController {
             ];
         }
         return [
-            SELECT Id, Subject, Kanban_Status__c, ActivityDate, Priority,
+            SELECT Id, Subject, Kanban_Status__c, ActivityDate, Assign_To_Month__c, Priority,
                    Task_Number__c, External_Link__c, Project__c, Project__r.Name,
                    Smart_Goal__c, Smart_Goal__r.Name, Smart_Goal__r.Initiative_Name__c,
                    OwnerId, Owner.Name, Description, Time_Spent__c, CreatedDate,
@@ -426,19 +426,21 @@ public with sharing class TaskKanbanController {
     @AuraEnabled
     public static Task createTask(String subject, String projectId, String kanbanStatus,
                                   Date dueDate, String description, String priority,
-                                  List<String> smartGoalIds, Decimal timeSpent, String assignedToId) {
+                                  List<String> smartGoalIds, Decimal timeSpent, String assignedToId,
+                                  Date assignToMonth) {
         String stdStatus = kanbanStatus == 'Complete' ? 'Completed'
                          : kanbanStatus == 'In Progress' ? 'In Progress'
                          : 'Open';
         String ownerId = String.isNotBlank(assignedToId) ? assignedToId : UserInfo.getUserId();
         Task t = new Task(
-            Subject          = subject,
-            OwnerId          = ownerId,
-            Status           = stdStatus,
-            Kanban_Status__c = String.isBlank(kanbanStatus) ? 'Queue' : kanbanStatus,
-            ActivityDate     = dueDate,
-            Description      = description,
-            Priority         = String.isBlank(priority) ? 'Normal' : priority
+            Subject            = subject,
+            OwnerId            = ownerId,
+            Status             = stdStatus,
+            Kanban_Status__c   = String.isBlank(kanbanStatus) ? 'Queue' : kanbanStatus,
+            ActivityDate       = dueDate,
+            Assign_To_Month__c = assignToMonth,
+            Description        = description,
+            Priority           = String.isBlank(priority) ? 'Normal' : priority
         );
         if (timeSpent != null) t.Time_Spent__c = timeSpent;
         if (String.isNotBlank(projectId)) t.Project__c = projectId;
@@ -449,7 +451,7 @@ public with sharing class TaskKanbanController {
             TaskNotificationService.notifyAssigned(t.Id, ownerId, UserInfo.getUserId());
         }
         return [
-            SELECT Id, Subject, Kanban_Status__c, ActivityDate, Priority,
+            SELECT Id, Subject, Kanban_Status__c, ActivityDate, Assign_To_Month__c, Priority,
                    Task_Number__c, External_Link__c, Project__c, Project__r.Name,
                    Smart_Goal__c, Smart_Goal__r.Name, Smart_Goal__r.Initiative_Name__c,
                    OwnerId, Owner.Name, Description, Time_Spent__c, CreatedDate
@@ -461,7 +463,7 @@ public with sharing class TaskKanbanController {
     public static Task updateTask(String taskId, String subject, String projectId,
                                   String kanbanStatus, Date dueDate, String description,
                                   String priority, List<String> smartGoalIds,
-                                  Decimal timeSpent, String assignedToId) {
+                                  Decimal timeSpent, String assignedToId, Date assignToMonth) {
         Task before = [SELECT OwnerId, Kanban_Status__c FROM Task WHERE Id = :taskId LIMIT 1];
         String oldOwnerId = before.OwnerId;
         String oldStatus  = before.Kanban_Status__c;
@@ -470,15 +472,16 @@ public with sharing class TaskKanbanController {
                          : kanbanStatus == 'In Progress' ? 'In Progress'
                          : 'Open';
         Task t = new Task(
-            Id               = taskId,
-            Subject          = subject,
-            Status           = stdStatus,
-            Kanban_Status__c = kanbanStatus,
-            ActivityDate     = dueDate,
-            Description      = description,
-            Priority         = priority,
-            Time_Spent__c    = timeSpent,
-            Smart_Goal__c    = (smartGoalIds != null && !smartGoalIds.isEmpty()) ? smartGoalIds[0] : null
+            Id                 = taskId,
+            Subject            = subject,
+            Status             = stdStatus,
+            Kanban_Status__c   = kanbanStatus,
+            ActivityDate       = dueDate,
+            Assign_To_Month__c = assignToMonth,
+            Description        = description,
+            Priority           = priority,
+            Time_Spent__c      = timeSpent,
+            Smart_Goal__c      = (smartGoalIds != null && !smartGoalIds.isEmpty()) ? smartGoalIds[0] : null
         );
         String newOwnerId = String.isNotBlank(assignedToId) ? assignedToId : oldOwnerId;
         if (String.isNotBlank(assignedToId)) t.OwnerId = assignedToId;
@@ -494,12 +497,24 @@ public with sharing class TaskKanbanController {
         }
 
         return [
-            SELECT Id, Subject, Kanban_Status__c, ActivityDate, Priority,
+            SELECT Id, Subject, Kanban_Status__c, ActivityDate, Assign_To_Month__c, Priority,
                    Task_Number__c, External_Link__c, Project__c, Project__r.Name,
                    Smart_Goal__c, Smart_Goal__r.Name, Smart_Goal__r.Initiative_Name__c,
                    OwnerId, Owner.Name, Description, Time_Spent__c, CreatedDate
             FROM Task WHERE Id = :t.Id
         ];
+    }
+
+    @AuraEnabled
+    public static void bulkAssignToMonth(List<String> taskIds, Date targetMonth) {
+        if (taskIds == null || taskIds.isEmpty() || targetMonth == null) return;
+        List<Task> toUpdate = new List<Task>();
+        for (String tid : taskIds) {
+            if (String.isNotBlank(tid)) {
+                toUpdate.add(new Task(Id = tid, Assign_To_Month__c = targetMonth));
+            }
+        }
+        if (!toUpdate.isEmpty()) update toUpdate;
     }
 
     @AuraEnabled

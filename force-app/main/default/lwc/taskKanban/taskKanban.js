@@ -34,6 +34,7 @@ import saveMentions               from '@salesforce/apex/TaskKanbanController.sa
 import getInitiativeStages        from '@salesforce/apex/TaskKanbanController.getInitiativeStages';
 import attachCsvToInitiativeStage from '@salesforce/apex/TaskKanbanController.attachCsvToInitiativeStage';
 import bulkUpdateStatus           from '@salesforce/apex/TaskKanbanController.bulkUpdateStatus';
+import bulkAssignToMonth          from '@salesforce/apex/TaskKanbanController.bulkAssignToMonth';
 import searchTags                 from '@salesforce/apex/TaskKanbanController.searchTags';
 import ensureTag                  from '@salesforce/apex/TaskKanbanController.ensureTag';
 import getTaskTags                from '@salesforce/apex/TaskKanbanController.getTaskTags';
@@ -44,12 +45,34 @@ import saveTemplateTags           from '@salesforce/apex/TaskKanbanController.sa
 const MONTH_NAMES = ['January','February','March','April','May','June',
                      'July','August','September','October','November','December'];
 
+// Returns a Date object set to the 1st of next month from today
+function _nextMonth() {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth() + 1, 1);
+}
+
 export default class TaskKanban extends LightningElement {
 
     @track selectedProjectId   = '';
     @track selectedSmartGoalId = '';
     @track selectedMonth;
+    @track showMonthPicker     = false;
+    @track pickerYear          = String(new Date().getFullYear());
+    @track pickerMonth         = String(new Date().getMonth() + 1);
     @track searchKeyword       = '';
+    // Assign to Month — new task form
+    @track newAssignOpen       = false;
+    @track newAssignYear       = String(_nextMonth().getFullYear());
+    @track newAssignMonth      = String(_nextMonth().getMonth() + 1);
+    // Assign to Month — edit task form
+    @track editAssignOpen      = false;
+    @track editAssignYear      = '';
+    @track editAssignMonth     = '';
+    // Assign to Month — bulk action
+    @track bulkAssignYear      = String(_nextMonth().getFullYear());
+    @track bulkAssignMonth     = String(_nextMonth().getMonth() + 1);
+    @track showBulkAssignPicker = false;
+    @track bulkAssignLoading   = false;
     @track selectedPriority    = '';
     @track columnSorts = {
         'Queue':       { field: 'CreatedDate', dir: 'desc' },
@@ -337,8 +360,10 @@ export default class TaskKanban extends LightningElement {
                     const d = new Date(rawDate + 'T00:00:00');
                     return d.getFullYear() === year && d.getMonth() + 1 === month;
                 };
-                const createdDateStr = t.CreatedDate ? t.CreatedDate.slice(0, 10) : null;
-                return inMonth(t.ActivityDate) || inMonth(createdDateStr);
+                const effectiveDate = t.Assign_To_Month__c
+                    ? t.Assign_To_Month__c
+                    : (t.CreatedDate ? t.CreatedDate.slice(0, 10) : null);
+                return inMonth(effectiveDate);
             });
         }
         if (this.selectedSmartGoalId) {
@@ -450,6 +475,13 @@ export default class TaskKanban extends LightningElement {
             const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
             opts.push({ label: `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`, value: val });
         }
+        // If user has selected a historical month outside the rolling window, show it at the top
+        const inWindow = opts.some(o => o.value === this.selectedMonth);
+        if (this.selectedMonth && !inWindow) {
+            const [yr, mo] = this.selectedMonth.split('-').map(Number);
+            opts.unshift({ label: `${MONTH_NAMES[mo - 1]} ${yr}`, value: this.selectedMonth });
+        }
+        opts.push({ label: '— Other month…', value: '__picker__' });
         return opts;
     }
 
@@ -828,7 +860,91 @@ export default class TaskKanban extends LightningElement {
 
     // ─── Filter handlers ──────────────────────────────────────────────────────
     handleProjectChange(event)          { this.selectedProjectId   = event.detail.value; }
-    handleMonthChange(event)            { this.selectedMonth       = event.detail.value; }
+    handleMonthChange(event) {
+        if (event.detail.value === '__picker__') {
+            this.showMonthPicker = true;
+        } else {
+            this.selectedMonth = event.detail.value;
+            this.showMonthPicker = false;
+        }
+    }
+    get pickerYearOptions() {
+        const opts = [];
+        const currentYear = new Date().getFullYear();
+        for (let y = currentYear + 1; y >= currentYear - 5; y--) {
+            opts.push({ label: String(y), value: String(y) });
+        }
+        return opts;
+    }
+    get pickerMonthOptions() {
+        return MONTH_NAMES.map((name, i) => ({ label: name, value: String(i + 1) }));
+    }
+    handlePickerYearChange(event) {
+        this.pickerYear = event.detail.value;
+    }
+    handlePickerMonthChange(event) {
+        this.pickerMonth = event.detail.value;
+    }
+    handlePickerApply() {
+        const mo = this.pickerMonth.padStart(2, '0');
+        this.selectedMonth = `${this.pickerYear}-${mo}`;
+        this.showMonthPicker = false;
+    }
+    handleMonthPickerCancel() {
+        this.showMonthPicker = false;
+    }
+    // Assign to Month — new task form
+    handleToggleNewAssign()           { this.newAssignOpen   = true; }
+    handleClearNewAssign()            { this.newAssignOpen   = false; }
+    handleNewAssignYearChange(event)  { this.newAssignYear   = event.detail.value; }
+    handleNewAssignMonthChange(event) { this.newAssignMonth  = event.detail.value; }
+    // Assign to Month — edit task form
+    handleToggleEditAssign()           { this.editAssignOpen  = true; }
+    handleClearEditAssignMonth() {
+        this.editAssignOpen  = false;
+        this.editAssignYear  = '';
+        this.editAssignMonth = '';
+    }
+    handleEditAssignYearChange(event)  { this.editAssignYear  = event.detail.value; }
+    handleEditAssignMonthChange(event) { this.editAssignMonth = event.detail.value; }
+    // Column select-all checkboxes
+    get queueAllSelected()      { return this.queueTasks.length > 0      && this.queueTasks.every(t => this.selectedTaskIds.includes(t.Id)); }
+    get inProgressAllSelected() { return this.inProgressTasks.length > 0 && this.inProgressTasks.every(t => this.selectedTaskIds.includes(t.Id)); }
+    get completeAllSelected()   { return this.completeTasks.length > 0   && this.completeTasks.every(t => this.selectedTaskIds.includes(t.Id)); }
+    handleSelectAllColumn(event) {
+        const col = event.currentTarget.dataset.col;
+        const colTasks = col === 'Queue' ? this.queueTasks
+                       : col === 'In Progress' ? this.inProgressTasks
+                       : this.completeTasks;
+        const colIds = colTasks.map(t => t.Id);
+        const allSelected = colIds.every(id => this.selectedTaskIds.includes(id));
+        if (allSelected) {
+            this.selectedTaskIds = this.selectedTaskIds.filter(id => !colIds.includes(id));
+        } else {
+            const toAdd = colIds.filter(id => !this.selectedTaskIds.includes(id));
+            this.selectedTaskIds = [...this.selectedTaskIds, ...toAdd];
+        }
+    }
+    // Bulk assign to month
+    handleBulkAssignYearChange(event)  { this.bulkAssignYear  = event.detail.value; }
+    handleBulkAssignMonthChange(event) { this.bulkAssignMonth = event.detail.value; }
+    handleToggleBulkAssignPicker() { this.showBulkAssignPicker = !this.showBulkAssignPicker; }
+    handleBulkAssignApply() {
+        if (!this.selectedTaskIds.length) return;
+        const mo = (this.bulkAssignMonth || '1').padStart(2, '0');
+        const targetMonth = `${this.bulkAssignYear}-${mo}-01`;
+        this.bulkAssignLoading = true;
+        bulkAssignToMonth({ taskIds: this.selectedTaskIds, targetMonth })
+            .then(() => {
+                this.showToast('Updated', `${this.selectedTaskIds.length} task(s) assigned to ${MONTH_NAMES[parseInt(mo, 10) - 1]} ${this.bulkAssignYear}.`, 'success');
+                this.selectedTaskIds = [];
+                this.showBulkAssignPicker = false;
+                this.selectMode = false;
+                return refreshApex(this._wiredTasksResult);
+            })
+            .catch(e => this.showError('Bulk assign failed', e))
+            .finally(() => { this.bulkAssignLoading = false; });
+    }
     handleSmartGoalFilterChange(event)  { this.selectedSmartGoalId = event.detail.value; }
     handlePriorityFilterChange(event)   { this.selectedPriority    = event.detail.value; }
     handleSearchInput(event)            { this.searchKeyword        = event.target.value; }
@@ -887,6 +1003,7 @@ export default class TaskKanban extends LightningElement {
     // ─── New Task Modal ───────────────────────────────────────────────────────
     handleNewTask() {
         this.newTask = { Subject: '', Kanban_Status__c: 'Queue', Priority: 'Normal', ActivityDate: '', Description: '', timeSpent: null, assignedToId: '' };
+        this.newAssignOpen  = false;
         this.newAssignedLabel = '';
         this._newTaskSavedId = null;
         this.newTaskHasAttachments = false;
@@ -911,6 +1028,7 @@ export default class TaskKanban extends LightningElement {
 
     handleCloseModal() {
         this.showNewTaskModal = false;
+        this.newAssignOpen    = false;
         this.newAssignedLabel = '';
         this.showNewAssignedDropdown = false;
         this._newTaskSavedId = null;
@@ -947,16 +1065,21 @@ export default class TaskKanban extends LightningElement {
             this.showError('Title is required', null);
             return;
         }
+        const newAssignMo   = (this.newAssignMonth || '1').padStart(2, '0');
+        const newAssignDate = this.newAssignOpen
+            ? `${this.newAssignYear}-${newAssignMo}-01`
+            : null;
         createTask({
-            subject:      this.newTask.Subject,
-            projectId:    this.newProjectIds[0]     || null,
-            kanbanStatus: this.newTask.Kanban_Status__c,
-            dueDate:      this.newTask.ActivityDate || null,
-            description:  this.newTask.Description,
-            priority:     this.newTask.Priority,
-            smartGoalIds: this.newSmartGoalIds,
-            timeSpent:    this.newTask.timeSpent    != null ? this.newTask.timeSpent : null,
-            assignedToId: this.newTask.assignedToId || null
+            subject:       this.newTask.Subject,
+            projectId:     this.newProjectIds[0]     || null,
+            kanbanStatus:  this.newTask.Kanban_Status__c,
+            dueDate:       this.newTask.ActivityDate || null,
+            description:   this.newTask.Description,
+            priority:      this.newTask.Priority,
+            smartGoalIds:  this.newSmartGoalIds,
+            timeSpent:     this.newTask.timeSpent    != null ? this.newTask.timeSpent : null,
+            assignedToId:  this.newTask.assignedToId || null,
+            assignToMonth: newAssignDate
         })
         .then(result => {
             this._newTaskSavedId = result.Id;
@@ -1055,6 +1178,20 @@ export default class TaskKanban extends LightningElement {
             timeSpent:        task.Time_Spent__c       != null ? task.Time_Spent__c : '',
             assignedToId:     task.OwnerId             || ''
         };
+        // Set edit assign month — only open picker if task already has a value
+        if (task.Assign_To_Month__c) {
+            const [ey, em] = task.Assign_To_Month__c.split('-');
+            this.editAssignYear  = ey;
+            this.editAssignMonth = String(parseInt(em, 10));
+            this.editAssignOpen  = true;
+        } else {
+            // Pre-load defaults for when user opens it, but keep it closed
+            const created = task.CreatedDate ? new Date(task.CreatedDate) : new Date();
+            const next    = new Date(created.getFullYear(), created.getMonth() + 1, 1);
+            this.editAssignYear  = String(next.getFullYear());
+            this.editAssignMonth = String(next.getMonth() + 1);
+            this.editAssignOpen  = false;
+        }
         this.editAssignedLabel = (task.Owner && task.Owner.Name) ? task.Owner.Name : '';
         this._editTaskId = task.Id;
         this.newCommentText = '';
@@ -1088,7 +1225,8 @@ export default class TaskKanban extends LightningElement {
     }
 
     handleCloseEditModal() {
-        this.showEditModal = false;
+        this.showEditModal   = false;
+        this.editAssignOpen  = false;
         this._editTaskId = null;
         this.newCommentText = '';
         this.showMentionDropdown = false;
@@ -1529,17 +1667,22 @@ export default class TaskKanban extends LightningElement {
             return;
         }
         const taskId = this.editTask.Id;
+        const editAssignMo   = (this.editAssignMonth || '1').padStart(2, '0');
+        const editAssignDate = (this.editAssignOpen && this.editAssignYear)
+            ? `${this.editAssignYear}-${editAssignMo}-01`
+            : null;
         updateTask({
             taskId,
-            subject:      this.editTask.Subject,
-            projectId:    this.editProjectIds[0]        || null,
-            kanbanStatus: this.editTask.Kanban_Status__c,
-            dueDate:      this.editTask.ActivityDate    || null,
-            description:  this.editTask.Description,
-            priority:     this.editTask.Priority,
-            smartGoalIds: this.editSmartGoalIds,
-            timeSpent:    this.editTask.timeSpent !== '' && this.editTask.timeSpent != null ? this.editTask.timeSpent : null,
-            assignedToId: this.editTask.assignedToId    || null
+            subject:       this.editTask.Subject,
+            projectId:     this.editProjectIds[0]        || null,
+            kanbanStatus:  this.editTask.Kanban_Status__c,
+            dueDate:       this.editTask.ActivityDate    || null,
+            description:   this.editTask.Description,
+            priority:      this.editTask.Priority,
+            smartGoalIds:  this.editSmartGoalIds,
+            timeSpent:     this.editTask.timeSpent !== '' && this.editTask.timeSpent != null ? this.editTask.timeSpent : null,
+            assignedToId:  this.editTask.assignedToId    || null,
+            assignToMonth: editAssignDate
         })
         .then(() => saveTaskRelations({ taskId, relatedTaskIds: this.editRelatedTaskIds }))
         .then(() => saveTaskProjects({ taskId, projectIds: this.editProjectIds }))
@@ -1550,7 +1693,8 @@ export default class TaskKanban extends LightningElement {
             }
         })
         .then(() => {
-            this.showEditModal = false;
+            this.showEditModal  = false;
+            this.editAssignOpen = false;
             this._editTaskId = null;
             this.newCommentText = '';
             this.showMentionDropdown = false;
@@ -1910,8 +2054,9 @@ export default class TaskKanban extends LightningElement {
             { Column_Header__c: 'Status',           Field_API_Name__c: 'Kanban_Status__c', defaultOn: true  },
             { Column_Header__c: 'Priority',         Field_API_Name__c: 'Priority',         defaultOn: false },
             { Column_Header__c: 'Project',          Field_API_Name__c: 'Project_Name',     defaultOn: true  },
-            { Column_Header__c: 'Due Date',         Field_API_Name__c: 'ActivityDate',     defaultOn: true  },
-            { Column_Header__c: 'Created Date',     Field_API_Name__c: 'CreatedDate',      defaultOn: false },
+            { Column_Header__c: 'Due Date',          Field_API_Name__c: 'ActivityDate',       defaultOn: true  },
+            { Column_Header__c: 'Assigned Month',   Field_API_Name__c: 'Assign_To_Month__c', defaultOn: false },
+            { Column_Header__c: 'Created Date',     Field_API_Name__c: 'CreatedDate',        defaultOn: false },
             { Column_Header__c: 'Assigned To',      Field_API_Name__c: 'Assigned_To',      defaultOn: false },
             { Column_Header__c: 'Time Spent (hrs)', Field_API_Name__c: 'Time_Spent__c',    defaultOn: false },
             { Column_Header__c: 'Description',      Field_API_Name__c: 'Description',      defaultOn: false },
@@ -1965,12 +2110,17 @@ export default class TaskKanban extends LightningElement {
         const rows = sorted.map(t =>
             columns.map(c => {
                 switch (c.Field_API_Name__c) {
-                    case 'Record_Link':     return `${baseUrl}/lightning/r/Task/${t.Id}/view`;
-                    case 'Project_Name':    return t.Project__r ? t.Project__r.Name : '';
-                    case 'Smart_Goal_Name': return t.Smart_Goal__r ? (t.Smart_Goal__r.Initiative_Name__c || '') : '';
-                    case 'Assigned_To':     return t.Owner ? (t.Owner.Name || '') : '';
-                    case 'CreatedDate':     return t.CreatedDate ? t.CreatedDate.slice(0, 10) : '';
-                    default:                return t[c.Field_API_Name__c] != null ? String(t[c.Field_API_Name__c]) : '';
+                    case 'Record_Link':        return `${baseUrl}/lightning/r/Task/${t.Id}/view`;
+                    case 'Project_Name':       return t.Project__r ? t.Project__r.Name : '';
+                    case 'Smart_Goal_Name':    return t.Smart_Goal__r ? (t.Smart_Goal__r.Initiative_Name__c || '') : '';
+                    case 'Assigned_To':        return t.Owner ? (t.Owner.Name || '') : '';
+                    case 'CreatedDate':        return t.CreatedDate ? t.CreatedDate.slice(0, 10) : '';
+                    case 'Assign_To_Month__c': {
+                        if (!t.Assign_To_Month__c) return '';
+                        const [yr, mo] = t.Assign_To_Month__c.split('-');
+                        return `${MONTH_NAMES[parseInt(mo, 10) - 1]} ${yr}`;
+                    }
+                    default:                   return t[c.Field_API_Name__c] != null ? String(t[c.Field_API_Name__c]) : '';
                 }
             })
         );
