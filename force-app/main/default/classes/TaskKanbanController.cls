@@ -1,5 +1,10 @@
 public with sharing class TaskKanbanController {
 
+    @AuraEnabled
+    public static Boolean pingSession() {
+        return true;
+    }
+
     @AuraEnabled(cacheable=true)
     public static List<Task> getUserTasks(String projectId) {
         Id userId = UserInfo.getUserId();

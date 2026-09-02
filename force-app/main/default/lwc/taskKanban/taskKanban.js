@@ -35,6 +35,7 @@ import getInitiativeStages        from '@salesforce/apex/TaskKanbanController.ge
 import attachCsvToInitiativeStage from '@salesforce/apex/TaskKanbanController.attachCsvToInitiativeStage';
 import bulkUpdateStatus           from '@salesforce/apex/TaskKanbanController.bulkUpdateStatus';
 import bulkAssignToMonth          from '@salesforce/apex/TaskKanbanController.bulkAssignToMonth';
+import pingSession                from '@salesforce/apex/TaskKanbanController.pingSession';
 import searchTags                 from '@salesforce/apex/TaskKanbanController.searchTags';
 import ensureTag                  from '@salesforce/apex/TaskKanbanController.ensureTag';
 import getTaskTags                from '@salesforce/apex/TaskKanbanController.getTaskTags';
@@ -155,6 +156,7 @@ export default class TaskKanban extends LightningElement {
     @track showNewAssignedDropdown = false;
     _pendingDeleteId = null;
     _dragTaskId = null;
+    _visibilityHandler = null;
     _wiredTasksResult;
     _wiredCommentsResult;
     _wiredSyncedFilesResult;
@@ -179,6 +181,7 @@ export default class TaskKanban extends LightningElement {
     @wire(getUserTasks, { projectId: '$selectedProjectId' })
     wiredTasks(result) {
         this._wiredTasksResult = result;
+        if (result.error) this._checkSessionExpiry(result.error);
     }
 
     // ─── Wire: Projects ───────────────────────────────────────────────────────
@@ -271,6 +274,18 @@ export default class TaskKanban extends LightningElement {
         loadScript(this, SHEETJS_URL)
             .then(() => { this._xlsxReady = true; })
             .catch(() => { this._xlsxReady = false; });
+        this._visibilityHandler = () => {
+            if (document.visibilityState === 'visible') {
+                pingSession().catch(err => this._checkSessionExpiry(err));
+            }
+        };
+        document.addEventListener('visibilitychange', this._visibilityHandler);
+    }
+
+    disconnectedCallback() {
+        if (this._visibilityHandler) {
+            document.removeEventListener('visibilitychange', this._visibilityHandler);
+        }
     }
 
     _loadPrefs() {
@@ -1002,28 +1017,32 @@ export default class TaskKanban extends LightningElement {
 
     // ─── New Task Modal ───────────────────────────────────────────────────────
     handleNewTask() {
-        this.newTask = { Subject: '', Kanban_Status__c: 'Queue', Priority: 'Normal', ActivityDate: '', Description: '', timeSpent: null, assignedToId: '' };
-        this.newAssignOpen  = false;
-        this.newAssignedLabel = '';
-        this._newTaskSavedId = null;
-        this.newTaskHasAttachments = false;
-        this.newSmartGoalIds = [];
-        this.newSmartGoalSearch = '';
-        this.showNewSmartGoalDropdown = false;
-        this.newRelatedTaskIds = [];
-        this.newRelatedTaskSearch = '';
-        this.showNewRelatedDropdown = false;
-        this.newProjectIds = [];
-        this.newProjectSearch = '';
-        this.showNewProjectDropdown = false;
-        this.newTaskTagChips = [];
-        this.newTaskTagSearch = '';
-        this.showNewTaskTagDropdown = false;
-        this.newTaskTagOptions = [];
-        this._newDescMentionedIds = [];
-        this.showNewDescDropdown = false;
-        this._newDescMentionQuery = '';
-        this.showNewTaskModal = true;
+        pingSession()
+            .then(() => {
+                this.newTask = { Subject: '', Kanban_Status__c: 'Queue', Priority: 'Normal', ActivityDate: '', Description: '', timeSpent: null, assignedToId: '' };
+                this.newAssignOpen  = false;
+                this.newAssignedLabel = '';
+                this._newTaskSavedId = null;
+                this.newTaskHasAttachments = false;
+                this.newSmartGoalIds = [];
+                this.newSmartGoalSearch = '';
+                this.showNewSmartGoalDropdown = false;
+                this.newRelatedTaskIds = [];
+                this.newRelatedTaskSearch = '';
+                this.showNewRelatedDropdown = false;
+                this.newProjectIds = [];
+                this.newProjectSearch = '';
+                this.showNewProjectDropdown = false;
+                this.newTaskTagChips = [];
+                this.newTaskTagSearch = '';
+                this.showNewTaskTagDropdown = false;
+                this.newTaskTagOptions = [];
+                this._newDescMentionedIds = [];
+                this.showNewDescDropdown = false;
+                this._newDescMentionQuery = '';
+                this.showNewTaskModal = true;
+            })
+            .catch(err => this._checkSessionExpiry(err));
     }
 
     handleCloseModal() {
@@ -2408,7 +2427,23 @@ export default class TaskKanban extends LightningElement {
     }
 
     showError(title, err) {
+        if (this._checkSessionExpiry(err)) return;
         const msg = err && err.body ? err.body.message : '';
         this.showToast(title, msg, 'error');
+    }
+
+    _checkSessionExpiry(err) {
+        const body = err && err.body;
+        if (!body) return false;
+        const isExpired =
+            body.errorCode === 'INVALID_SESSION_ID' ||
+            body.statusCode === 401 ||
+            (typeof body.message === 'string' && body.message.toUpperCase().includes('INVALID_SESSION_ID'));
+        if (isExpired) {
+            this.showToast('Session Expired', 'Your session has expired. Redirecting to login…', 'warning');
+            // eslint-disable-next-line @lwc/lwc/no-async-operation
+            setTimeout(() => window.location.reload(), 3000);
+        }
+        return isExpired;
     }
 }
