@@ -1018,6 +1018,9 @@ export default class TaskKanban extends LightningElement {
     // ─── New Task Modal ───────────────────────────────────────────────────────
     handleNewTask() {
         pingSession()
+            .catch(err => {
+                if (this._checkSessionExpiry(err)) return Promise.reject('session');
+            })
             .then(() => {
                 this.newTask = { Subject: '', Kanban_Status__c: 'Queue', Priority: 'Normal', ActivityDate: '', Description: '', timeSpent: null, assignedToId: '' };
                 this.newAssignOpen  = false;
@@ -1041,8 +1044,7 @@ export default class TaskKanban extends LightningElement {
                 this.showNewDescDropdown = false;
                 this._newDescMentionQuery = '';
                 this.showNewTaskModal = true;
-            })
-            .catch(err => this._checkSessionExpiry(err));
+            });
     }
 
     handleCloseModal() {
