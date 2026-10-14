@@ -6,6 +6,8 @@ import SHEETJS_URL from '@salesforce/resourceUrl/SheetJS';
 import getUserTasks     from '@salesforce/apex/TaskKanbanController.getUserTasks';
 import getUserProjects  from '@salesforce/apex/TaskKanbanController.getUserProjects';
 import getSmartGoals    from '@salesforce/apex/TaskKanbanController.getSmartGoals';
+import getSmartGoalsForMonth from '@salesforce/apex/TaskKanbanController.getSmartGoalsForMonth';
+import getTaskIdsForSmartGoal from '@salesforce/apex/TaskKanbanController.getTaskIdsForSmartGoal';
 import getExportColumns from '@salesforce/apex/TaskKanbanController.getExportColumns';
 import getActiveUsers   from '@salesforce/apex/TaskKanbanController.getActiveUsers';
 import getTaskComments  from '@salesforce/apex/TaskKanbanController.getTaskComments';
@@ -157,6 +159,7 @@ export default class TaskKanban extends LightningElement {
     _pendingDeleteId = null;
     _dragTaskId = null;
     _visibilityHandler = null;
+    _smartGoalLabels = {};
     _wiredTasksResult;
     _wiredCommentsResult;
     _wiredSyncedFilesResult;
@@ -182,6 +185,7 @@ export default class TaskKanban extends LightningElement {
     wiredTasks(result) {
         this._wiredTasksResult = result;
         if (result.error) this._checkSessionExpiry(result.error);
+        if (result.data && this.selectedSmartGoalId) this._loadGoalTaskIds();
     }
 
     // ─── Wire: Projects ───────────────────────────────────────────────────────
@@ -191,6 +195,42 @@ export default class TaskKanban extends LightningElement {
     // ─── Wire: Smart Goals ────────────────────────────────────────────────────
     @wire(getSmartGoals)
     smartGoals;
+
+    // ─── Wire: Smart Goals for the selected month's fiscal year (board filter,
+    // export name, Submit). Task forms keep using the current-year list above.
+    @track filterSmartGoals = [];
+    @wire(getSmartGoalsForMonth, { selectedMonth: '$selectedMonth' })
+    wiredFilterSmartGoals({ data }) {
+        if (!data) return;
+        this.filterSmartGoals = data;
+        // Moving to a month in a different fiscal year drops a goal that no
+        // longer exists in the list, so the board isn't silently filtered to nothing.
+        if (this.selectedSmartGoalId && !data.some(g => g.Id === this.selectedSmartGoalId)) {
+            this.selectedSmartGoalId = '';
+            this._goalTaskIds = null;
+        }
+    }
+
+    // Reloads the board. Goal links are reloaded too: a save that only changes a
+    // task's goals can leave the task data unchanged, so the wire may not re-fire.
+    _refreshTasks() {
+        this._loadGoalTaskIds();
+        return refreshApex(this._wiredTasksResult);
+    }
+
+    // Task Ids (15-char) linked to the selected goal via any of their goals, not just
+    // the primary one. Reloaded on filter change and whenever the task wire refreshes.
+    _goalTaskIds = null;
+    _loadGoalTaskIds() {
+        const goalId = this.selectedSmartGoalId;
+        if (!goalId) { this._goalTaskIds = null; return; }
+        getTaskIdsForSmartGoal({ smartGoalId: goalId })
+            .then(ids => {
+                if (goalId !== this.selectedSmartGoalId) return; // filter changed meanwhile
+                this._goalTaskIds = new Set((ids || []).map(id => id.slice(0, 15)));
+            })
+            .catch(err => this.showError('Could not load Smart Goal tasks', err));
+    }
 
     // ─── Wire: Active Users ───────────────────────────────────────────────────
     @wire(getActiveUsers)
@@ -214,8 +254,27 @@ export default class TaskKanban extends LightningElement {
     loadTaskSmartGoals() {
         if (!this._editTaskId) { this.editSmartGoalIds = []; return; }
         getTaskSmartGoals({ taskId: this._editTaskId })
-            .then(data => { this.editSmartGoalIds = (data || []).map(r => r.Smart_Goal__c); })
+            .then(data => {
+                this._rememberSmartGoalLabels(data);
+                this.editSmartGoalIds = (data || []).map(r => r.Smart_Goal__c);
+            })
             .catch(() => { this.editSmartGoalIds = []; });
+    }
+
+    // Junction rows carry the goal's name, so goals outside the current fiscal
+    // year (not in smartGoals.data) still get a readable chip label.
+    _rememberSmartGoalLabels(rows) {
+        (rows || []).forEach(r => {
+            const g = r.Smart_Goal__r;
+            if (g) this._smartGoalLabels[r.Smart_Goal__c] = g.Initiative_Name__c || g.Name;
+        });
+    }
+
+    _smartGoalLabel(id) {
+        const opt = (this.smartGoals && this.smartGoals.data || []).find(g => g.Id === id)
+                 || this.filterSmartGoals.find(g => g.Id === id);
+        if (opt) return opt.Initiative_Name__c || opt.Name;
+        return this._smartGoalLabels[id] || id;
     }
 
     loadRelatedTasks() {
@@ -228,7 +287,10 @@ export default class TaskKanban extends LightningElement {
     loadTemplateSmartGoals() {
         if (!this.editingTemplateId) { this.templateSmartGoalIds = []; return; }
         getTemplateSmartGoals({ templateId: this.editingTemplateId })
-            .then(data => { this.templateSmartGoalIds = (data || []).map(r => r.Smart_Goal__c); })
+            .then(data => {
+                this._rememberSmartGoalLabels(data);
+                this.templateSmartGoalIds = (data || []).map(r => r.Smart_Goal__c);
+            })
             .catch(() => { this.templateSmartGoalIds = []; });
     }
 
@@ -382,7 +444,9 @@ export default class TaskKanban extends LightningElement {
             });
         }
         if (this.selectedSmartGoalId) {
-            tasks = tasks.filter(t => t.Smart_Goal__c === this.selectedSmartGoalId);
+            const linked = this._goalTaskIds;
+            tasks = tasks.filter(t => t.Smart_Goal__c === this.selectedSmartGoalId ||
+                                      (linked && linked.has(t.Id.slice(0, 15))));
         }
         if (this.selectedPriority) {
             tasks = tasks.filter(t => t.Priority === this.selectedPriority);
@@ -476,9 +540,7 @@ export default class TaskKanban extends LightningElement {
 
     get smartGoalFilterOptions() {
         const opts = [{ label: 'All Smart Goals', value: '' }];
-        if (this.smartGoals && this.smartGoals.data) {
-            this.smartGoals.data.forEach(g => opts.push({ label: g.Initiative_Name__c || g.Name, value: g.Id }));
-        }
+        this.filterSmartGoals.forEach(g => opts.push({ label: g.Initiative_Name__c || g.Name, value: g.Id }));
         return opts;
     }
 
@@ -641,10 +703,7 @@ export default class TaskKanban extends LightningElement {
     }
 
     get editSmartGoalChips() {
-        return this.editSmartGoalIds.map(id => {
-            const opt = (this.smartGoals && this.smartGoals.data || []).find(g => g.Id === id);
-            return { id, label: opt ? (opt.Initiative_Name__c || opt.Name) : id };
-        });
+        return this.editSmartGoalIds.map(id => ({ id, label: this._smartGoalLabel(id) }));
     }
 
     get filteredEditSmartGoalOptions() {
@@ -658,10 +717,7 @@ export default class TaskKanban extends LightningElement {
     get editSmartGoalsEmpty() { return this.filteredEditSmartGoalOptions.length === 0; }
 
     get newSmartGoalChips() {
-        return this.newSmartGoalIds.map(id => {
-            const opt = (this.smartGoals && this.smartGoals.data || []).find(g => g.Id === id);
-            return { id, label: opt ? (opt.Initiative_Name__c || opt.Name) : id };
-        });
+        return this.newSmartGoalIds.map(id => ({ id, label: this._smartGoalLabel(id) }));
     }
 
     get filteredNewSmartGoalOptions() {
@@ -718,10 +774,7 @@ export default class TaskKanban extends LightningElement {
     get newRelatedTasksEmpty() { return this.filteredNewRelatedOptions.length === 0; }
 
     get templateSmartGoalChips() {
-        return this.templateSmartGoalIds.map(id => {
-            const opt = (this.smartGoals && this.smartGoals.data || []).find(g => g.Id === id);
-            return { id, label: opt ? (opt.Initiative_Name__c || opt.Name) : id };
-        });
+        return this.templateSmartGoalIds.map(id => ({ id, label: this._smartGoalLabel(id) }));
     }
 
     get filteredTemplateSmartGoalOptions() {
@@ -955,12 +1008,16 @@ export default class TaskKanban extends LightningElement {
                 this.selectedTaskIds = [];
                 this.showBulkAssignPicker = false;
                 this.selectMode = false;
-                return refreshApex(this._wiredTasksResult);
+                return this._refreshTasks();
             })
             .catch(e => this.showError('Bulk assign failed', e))
             .finally(() => { this.bulkAssignLoading = false; });
     }
-    handleSmartGoalFilterChange(event)  { this.selectedSmartGoalId = event.detail.value; }
+    handleSmartGoalFilterChange(event)  {
+        this.selectedSmartGoalId = event.detail.value;
+        this._goalTaskIds = null;
+        this._loadGoalTaskIds();
+    }
     handlePriorityFilterChange(event)   { this.selectedPriority    = event.detail.value; }
     handleSearchInput(event)            { this.searchKeyword        = event.target.value; }
 
@@ -1009,7 +1066,7 @@ export default class TaskKanban extends LightningElement {
         if (!task || task.Kanban_Status__c === newStatus) return;
 
         updateTaskStatus({ taskId: this._dragTaskId, newStatus })
-            .then(() => refreshApex(this._wiredTasksResult))
+            .then(() => this._refreshTasks())
             .catch(err => this.showError('Failed to update status', err));
 
         this._dragTaskId = null;
@@ -1140,7 +1197,7 @@ export default class TaskKanban extends LightningElement {
                 this.newTaskTagOptions = [];
                 this.showToast('Task Created', 'Task saved successfully.', 'success');
             }
-            return refreshApex(this._wiredTasksResult);
+            return this._refreshTasks();
         })
         .catch(err => this.showError('Failed to create task', err));
     }
@@ -1735,7 +1792,7 @@ export default class TaskKanban extends LightningElement {
             this.editTaskTagSearch = '';
             this.showEditTaskTagDropdown = false;
             this.editTaskTagOptions = [];
-            return refreshApex(this._wiredTasksResult);
+            return this._refreshTasks();
         })
         .catch(err => this.showError('Failed to update task', err));
     }
@@ -1832,7 +1889,7 @@ export default class TaskKanban extends LightningElement {
         deleteTask({ taskId: this._pendingDeleteId })
             .then(() => {
                 this._pendingDeleteId = null;
-                return refreshApex(this._wiredTasksResult);
+                return this._refreshTasks();
             })
             .catch(err => this.showError('Failed to delete task', err));
     }
@@ -2058,7 +2115,7 @@ export default class TaskKanban extends LightningElement {
         triggerRecurringSpawn()
             .then(() => {
                 this.showToast('Recurring Tasks Spawned', 'Tasks from active templates have been added to Queue for this month.', 'success');
-                return refreshApex(this._wiredTasksResult);
+                return this._refreshTasks();
             })
             .catch(err => this.showError('Spawn failed', err));
     }
@@ -2148,8 +2205,8 @@ export default class TaskKanban extends LightningElement {
 
         const [year, month] = (this.selectedMonth || '').split('-');
         let goalName = 'Tasks';
-        if (this.selectedSmartGoalId && this.smartGoals && this.smartGoals.data) {
-            const goal = this.smartGoals.data.find(g => g.Id === this.selectedSmartGoalId);
+        if (this.selectedSmartGoalId) {
+            const goal = this.filterSmartGoals.find(g => g.Id === this.selectedSmartGoalId);
             if (goal) {
                 goalName = (goal.Initiative_Name__c || goal.Name || 'Tasks')
                     .replace(/[^a-zA-Z0-9 ]/g, '')
@@ -2272,7 +2329,7 @@ export default class TaskKanban extends LightningElement {
                 this.showToast('Updated', `${this.selectedTaskIds.length} task(s) moved to ${newStatus}.`, 'success');
                 this.selectedTaskIds = [];
                 this.selectMode = false;
-                return refreshApex(this._wiredTasksResult);
+                return this._refreshTasks();
             })
             .catch(err => this.showError('Bulk update failed', err))
             .finally(() => { this.bulkLoading = false; });

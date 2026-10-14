@@ -49,12 +49,25 @@ public with sharing class TaskKanbanController {
 
     @AuraEnabled(cacheable=true)
     public static List<Initiative__c> getSmartGoals() {
+        return smartGoalsForFiscalYear(Date.today().year(), Date.today().month());
+    }
+
+    // Smart goals for the fiscal year containing selectedMonth ('YYYY-MM'), so the
+    // board filter and Submit can reach goals from past fiscal years.
+    @AuraEnabled(cacheable=true)
+    public static List<Initiative__c> getSmartGoalsForMonth(String selectedMonth) {
+        if (String.isBlank(selectedMonth) || !Pattern.matches('\\d{4}-\\d{2}', selectedMonth)) {
+            return getSmartGoals();
+        }
+        List<String> parts = selectedMonth.split('-');
+        return smartGoalsForFiscalYear(Integer.valueOf(parts[0]), Integer.valueOf(parts[1]));
+    }
+
+    private static List<Initiative__c> smartGoalsForFiscalYear(Integer yr, Integer mo) {
         Id userId = UserInfo.getUserId();
         List<Employee__c> emps = [SELECT Id FROM Employee__c WHERE User__c = :userId LIMIT 1];
         if (emps.isEmpty()) return new List<Initiative__c>();
 
-        Integer yr = Date.today().year();
-        Integer mo = Date.today().month();
         String fy = mo >= 10
             ? 'October ' + yr + ' - September ' + (yr + 1)
             : 'October ' + (yr - 1) + ' - September ' + yr;
@@ -173,6 +186,19 @@ public with sharing class TaskKanbanController {
     @AuraEnabled
     public static void syncTaskFilesToSharePoint(String taskId) {
         System.enqueueJob(new TaskSharePointSyncJob(taskId));
+    }
+
+    // Ids of every task linked to a smart goal through Task_Smart_Goal__c (not just
+    // the primary Smart_Goal__c field). Non-cacheable so the board filter sees new links.
+    @AuraEnabled
+    public static List<String> getTaskIdsForSmartGoal(String smartGoalId) {
+        List<String> ids = new List<String>();
+        if (String.isBlank(smartGoalId)) return ids;
+        for (Task_Smart_Goal__c j : [SELECT Task__c FROM Task_Smart_Goal__c
+                                     WHERE Smart_Goal__c = :smartGoalId AND Task__c != null]) {
+            ids.add(j.Task__c);
+        }
+        return ids;
     }
 
     @AuraEnabled
