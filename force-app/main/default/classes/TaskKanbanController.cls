@@ -188,6 +188,41 @@ public with sharing class TaskKanbanController {
         System.enqueueJob(new TaskSharePointSyncJob(taskId));
     }
 
+    // ─── Monday.com integration (see MondayService) ──────────────────────────
+    // Non-cacheable: each call checks the live Monday connection.
+    @AuraEnabled
+    public static MondayService.MondayContext getMondayContext() {
+        return MondayService.getContext();
+    }
+
+    @AuraEnabled
+    public static List<MondayService.Option> getMyMondayBoards() {
+        try {
+            return MondayService.getMyBoards();
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    @AuraEnabled
+    public static MondayService.MondayContext connectMondayBoard(String boardId) {
+        try {
+            return MondayService.connectBoard(boardId);
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    // Returns the task's Monday fields; Monday_Sync_Status__c = 'Error' when the item could not be created
+    @AuraEnabled
+    public static Task createMondayItem(String taskId, String groupId) {
+        try {
+            return MondayService.createItemForTask(taskId, groupId);
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
     // Ids of every task linked to a smart goal through Task_Smart_Goal__c (not just
     // the primary Smart_Goal__c field). Non-cacheable so the board filter sees new links.
     @AuraEnabled

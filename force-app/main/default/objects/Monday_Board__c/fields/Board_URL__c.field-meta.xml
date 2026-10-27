@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Board_URL__c</fullName>
+    <description>Link to the board in Monday.com.</description>
+    <label>Board URL</label>
+    <required>false</required>
+    <type>Url</type>
+</CustomField>

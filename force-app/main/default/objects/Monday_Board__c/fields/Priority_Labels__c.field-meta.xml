@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Priority_Labels__c</fullName>
+    <description>JSON array of the priority column's labels.</description>
+    <externalId>false</externalId>
+    <label>Priority Labels</label>
+    <length>4000</length>
+    <required>false</required>
+    <type>LongTextArea</type>
+    <visibleLines>3</visibleLines>
+</CustomField>
