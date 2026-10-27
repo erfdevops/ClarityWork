@@ -35,6 +35,8 @@ private class TaskKanbanControllerTest {
     static void boardQueries() {
         Project__c p = [SELECT Id FROM Project__c LIMIT 1];
         makeEmployee();
+        // An open task from another app (no Kanban_Status__c) must stay off the board
+        insert new Task(Subject = 'Other app task', Status = 'Open', Project__c = p.Id);
 
         Test.startTest();
         Assert.isTrue(TaskKanbanController.pingSession());

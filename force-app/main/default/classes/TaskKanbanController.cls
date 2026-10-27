@@ -5,10 +5,11 @@ public with sharing class TaskKanbanController {
         return true;
     }
 
+    // Only tasks entered through Clarity Work (every Clarity task has a Kanban_Status__c);
+    // tasks from other apps sharing the Task object never appear on the board.
     @AuraEnabled(cacheable=true)
     public static List<Task> getUserTasks(String projectId) {
         Id userId = UserInfo.getUserId();
-        Date today = Date.today();
         if (String.isBlank(projectId)) {
             return [
                 SELECT Id, Subject, Kanban_Status__c, ActivityDate, Assign_To_Month__c, Priority,
@@ -18,11 +19,7 @@ public with sharing class TaskKanbanController {
                        IsRecurrence
                 FROM Task
                 WHERE OwnerId = :userId
-                AND (
-                    Kanban_Status__c != null
-                    OR (IsClosed = false AND IsRecurrence = false)
-                    OR (IsClosed = false AND IsRecurrence = true AND ActivityDate <= :today)
-                )
+                AND Kanban_Status__c != null
                 ORDER BY ActivityDate ASC NULLS LAST
                 LIMIT 1000
             ];
@@ -36,12 +33,7 @@ public with sharing class TaskKanbanController {
             FROM Task
             WHERE OwnerId = :userId
             AND Project__c = :projectId
-            AND (
-                Kanban_Status__c != null
-                OR (IsClosed = false AND IsRecurrence = false)
-                OR (IsClosed = false AND IsRecurrence = true
-                    AND (ActivityDate = null OR ActivityDate <= :today))
-            )
+            AND Kanban_Status__c != null
             ORDER BY ActivityDate ASC NULLS LAST
             LIMIT 1000
         ];
