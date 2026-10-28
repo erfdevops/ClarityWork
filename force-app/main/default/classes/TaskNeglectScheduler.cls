@@ -39,15 +39,32 @@ global class TaskNeglectScheduler implements Schedulable {
             LIMIT 200
         ];
 
+        // Kanban_Status__c != null keeps reminders to Clarity Work tasks only —
+        // other apps' tasks (e.g. Action Plans) must never get these emails
         List<Task> dueTomorrow = [
             SELECT Id, Subject, OwnerId
             FROM Task
             WHERE ActivityDate = :tomorrow
             AND Kanban_Status__c != 'Complete'
+            AND Kanban_Status__c != null
             AND IsClosed = false
             LIMIT 200
         ];
 
+        List<Messaging.SingleEmailMessage> emails = buildReminders(sevenDayNeglect, fourteenDayNeglect, dueTomorrow);
+        if (!emails.isEmpty()) {
+            try {
+                Messaging.sendEmail(emails);
+            } catch (Exception e) {
+                System.debug('TaskNeglectScheduler.sendEmail: ' + e.getMessage());
+            }
+        }
+    }
+
+    // Separated from run() so tests can cover it — LastModifiedDate can't be backdated in tests
+    @TestVisible
+    private static List<Messaging.SingleEmailMessage> buildReminders(List<Task> sevenDayNeglect,
+            List<Task> fourteenDayNeglect, List<Task> dueTomorrow) {
         String baseUrl = URL.getOrgDomainUrl().toExternalForm();
         List<Messaging.SingleEmailMessage> emails = new List<Messaging.SingleEmailMessage>();
 
@@ -110,14 +127,7 @@ global class TaskNeglectScheduler implements Schedulable {
             msg.setSaveAsActivity(false);
             emails.add(msg);
         }
-
-        if (!emails.isEmpty()) {
-            try {
-                Messaging.sendEmail(emails);
-            } catch (Exception e) {
-                System.debug('TaskNeglectScheduler.sendEmail: ' + e.getMessage());
-            }
-        }
+        return emails;
     }
 
     public static void setupSchedule() {
