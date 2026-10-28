@@ -80,7 +80,7 @@ private class MondayServiceTest {
         Test.setMock(HttpCalloutMock.class, mock);
 
         Test.startTest();
-        MondayService.MondayContext ctx = MondayService.connectBoard('123');
+        MondayService.MondayContext ctx = MondayController.connectMondayBoard('123');
         Test.stopTest();
 
         Monday_Board__c rec = MondayService.getMyBoard();
@@ -102,7 +102,7 @@ private class MondayServiceTest {
         Task t = [SELECT Id FROM Task LIMIT 1];
 
         Test.startTest();
-        MondayService.createItemForTask(t.Id, 'topics');
+        MondayController.createMondayItem(t.Id, 'topics');
         Test.stopTest();
 
         t = [SELECT Monday_Item_Id__c, Monday_Item_URL__c, Monday_Sync_Status__c, Monday_Board_Id__c FROM Task WHERE Id = :t.Id];
@@ -152,7 +152,7 @@ private class MondayServiceTest {
         Test.setMock(HttpCalloutMock.class, new MondayMock());
 
         Test.startTest();
-        MondayService.MondayContext ctx = TaskKanbanController.getMondayContext();
+        MondayService.MondayContext ctx = MondayController.getMondayContext();
         Test.stopTest();
 
         Assert.isTrue(ctx.connected);
@@ -165,12 +165,29 @@ private class MondayServiceTest {
         Test.setMock(HttpCalloutMock.class, new MondayMock());
 
         Test.startTest();
-        List<MondayService.Option> boards = TaskKanbanController.getMyMondayBoards();
+        List<MondayService.Option> boards = MondayController.getMyMondayBoards();
         Test.stopTest();
 
         Assert.areEqual(2, boards.size());
         Assert.areEqual('123', boards[0].value);
         Assert.areEqual('9', boards[1].value);
+    }
+
+    @IsTest
+    static void controllerReturnsReadableErrors() {
+        MondayMock mock = new MondayMock();
+        mock.fail = true;
+        Test.setMock(HttpCalloutMock.class, mock);
+        Task t = [SELECT Id FROM Task LIMIT 1];
+
+        Test.startTest();
+        List<String> messages = new List<String>();
+        try { MondayController.connectMondayBoard(' '); } catch (AuraHandledException e) { messages.add(e.getMessage()); }
+        try { MondayController.getMyMondayBoards(); } catch (AuraHandledException e) { messages.add(e.getMessage()); }
+        try { MondayController.createMondayItem(t.Id, ''); } catch (AuraHandledException e) { messages.add(e.getMessage()); }
+        Test.stopTest();
+
+        Assert.areEqual(3, messages.size(), 'each failure surfaces as an AuraHandledException');
     }
 
     @IsTest
