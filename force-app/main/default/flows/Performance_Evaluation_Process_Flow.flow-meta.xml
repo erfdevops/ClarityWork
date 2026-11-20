@@ -427,6 +427,29 @@
         </connector>
     </assignments>
     <assignments>
+        <name>Executive_Approval_Accumulate_Initiative_Achievement</name>
+        <label>Executive Approval Accumulate Initiative Achievement</label>
+        <locationX>3746</locationX>
+        <locationY>1382</locationY>
+        <assignmentItems>
+            <assignToReference>varExecInitiativeAchievementSum</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>Executive_Approval_Loop_Filtered_Smart_Goals.Initiative_Achievement__c</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>varExecInitiativeAchievementCount</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <numberValue>1.0</numberValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Executive_Approval_Filter_Comments</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
         <name>Copy_1_of_Copy_1_of_Copy_1_of_Assign_Values_to_Comment_Variable</name>
         <label>Copy 1 of Copy 1 of Copy 1 of Assign Values to Comment Variable</label>
         <locationX>4010</locationX>
@@ -478,6 +501,13 @@
             <operator>Assign</operator>
             <value>
                 <elementReference>Executive_Approval_Loop_Comment.Id</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>varComment.SMART_Goal_Description__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Executive_Approval_Loop_Filtered_Smart_Goals.Initiative_Achievement__c</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -1102,6 +1132,12 @@
 ))</expression>
     </formulas>
     <formulas>
+        <name>formExecAvgInitiativeAchievement</name>
+        <dataType>Number</dataType>
+        <expression>IF({!varExecInitiativeAchievementCount} = 0, 0, {!varExecInitiativeAchievementSum} / {!varExecInitiativeAchievementCount})</expression>
+        <scale>2</scale>
+    </formulas>
+    <formulas>
         <name>FormCurrentItem</name>
         <dataType>Number</dataType>
         <expression>{!CountCurrentItem}</expression>
@@ -1278,7 +1314,7 @@
         <collectionReference>Executive_Approval_Filter_Smart_Goals</collectionReference>
         <iterationOrder>Asc</iterationOrder>
         <nextValueConnector>
-            <targetReference>Executive_Approval_Filter_Comments</targetReference>
+            <targetReference>Executive_Approval_Accumulate_Initiative_Achievement</targetReference>
         </nextValueConnector>
         <noMoreValuesConnector>
             <targetReference>Executive_Approval_Loop_Ini_St</targetReference>
@@ -2130,7 +2166,7 @@
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>Direct_Report_Comments</name>
-                    <fieldText>Direct Report Comments</fieldText>
+                    <fieldText>Direct Report Comments</fieldText>for
                     <fieldType>LargeTextArea</fieldType>
                     <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isDisabled>
@@ -3609,6 +3645,11 @@
                     <fieldText>&lt;p&gt;&lt;strong&gt;General Performance:&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;{!Get_Performance_Evaluation.Overall_Rating__c}&lt;/p&gt;</fieldText>
                     <fieldType>DisplayText</fieldType>
                 </fields>
+                <fields>
+                    <name>Copy_2_of_Copy_1_of_Copy_1_of_SummOverallInitiativeAchievement</name>
+                    <fieldText>&lt;p&gt;&lt;strong&gt;Overall Initiative Achievement:&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;{!formExecAvgInitiativeAchievement}%&lt;/p&gt;</fieldText>
+                    <fieldType>DisplayText</fieldType>
+                </fields>
                 <inputParameters>
                     <name>width</name>
                     <value>
@@ -3813,7 +3854,7 @@
                     <inputParameters>
                         <name>columns</name>
                         <value>
-                            <stringValue>[{&quot;apiName&quot;:&quot;SMART_Goal_Name__c&quot;,&quot;guid&quot;:&quot;column-e7a8&quot;,&quot;editable&quot;:false,&quot;hasCustomHeaderLabel&quot;:false,&quot;customHeaderLabel&quot;:&quot;&quot;,&quot;wrapText&quot;:true,&quot;order&quot;:0,&quot;label&quot;:&quot;SMART Goal Name&quot;,&quot;type&quot;:&quot;customRichText&quot;},{&quot;apiName&quot;:&quot;Performance_Results__c&quot;,&quot;guid&quot;:&quot;column-6c16&quot;,&quot;editable&quot;:false,&quot;hasCustomHeaderLabel&quot;:false,&quot;customHeaderLabel&quot;:&quot;&quot;,&quot;wrapText&quot;:true,&quot;order&quot;:1,&quot;label&quot;:&quot;Performance Results&quot;,&quot;type&quot;:&quot;text&quot;},{&quot;apiName&quot;:&quot;Manager_Performance_Evaluation_Comments__c&quot;,&quot;guid&quot;:&quot;column-7a01&quot;,&quot;editable&quot;:false,&quot;hasCustomHeaderLabel&quot;:false,&quot;customHeaderLabel&quot;:&quot;&quot;,&quot;wrapText&quot;:true,&quot;order&quot;:2,&quot;label&quot;:&quot;Manager Performance Evaluation Comments&quot;,&quot;type&quot;:&quot;text&quot;},{&quot;apiName&quot;:&quot;Dir_Rep_Performance_Evaluation_Comments__c&quot;,&quot;guid&quot;:&quot;column-5188&quot;,&quot;editable&quot;:false,&quot;hasCustomHeaderLabel&quot;:false,&quot;customHeaderLabel&quot;:&quot;&quot;,&quot;wrapText&quot;:true,&quot;order&quot;:3,&quot;label&quot;:&quot;Dir.Rep. Performance Evaluation Comments&quot;,&quot;type&quot;:&quot;text&quot;}]</stringValue>
+                            <stringValue>[{&quot;apiName&quot;:&quot;SMART_Goal_Name__c&quot;,&quot;guid&quot;:&quot;column-e7a8&quot;,&quot;editable&quot;:false,&quot;hasCustomHeaderLabel&quot;:false,&quot;customHeaderLabel&quot;:&quot;&quot;,&quot;wrapText&quot;:true,&quot;order&quot;:0,&quot;label&quot;:&quot;SMART Goal Name&quot;,&quot;type&quot;:&quot;customRichText&quot;},{&quot;apiName&quot;:&quot;SMART_Goal_Description__c&quot;,&quot;guid&quot;:&quot;column-6c16&quot;,&quot;editable&quot;:false,&quot;hasCustomHeaderLabel&quot;:true,&quot;customHeaderLabel&quot;:&quot;Initiative Achievement&quot;,&quot;wrapText&quot;:true,&quot;order&quot;:1,&quot;label&quot;:&quot;SMART Goal Description&quot;,&quot;type&quot;:&quot;text&quot;},{&quot;apiName&quot;:&quot;Manager_Performance_Evaluation_Comments__c&quot;,&quot;guid&quot;:&quot;column-7a01&quot;,&quot;editable&quot;:false,&quot;hasCustomHeaderLabel&quot;:false,&quot;customHeaderLabel&quot;:&quot;&quot;,&quot;wrapText&quot;:true,&quot;order&quot;:2,&quot;label&quot;:&quot;Manager Performance Evaluation Comments&quot;,&quot;type&quot;:&quot;text&quot;},{&quot;apiName&quot;:&quot;Dir_Rep_Performance_Evaluation_Comments__c&quot;,&quot;guid&quot;:&quot;column-5188&quot;,&quot;editable&quot;:false,&quot;hasCustomHeaderLabel&quot;:false,&quot;customHeaderLabel&quot;:&quot;&quot;,&quot;wrapText&quot;:true,&quot;order&quot;:3,&quot;label&quot;:&quot;Dir.Rep. Performance Evaluation Comments&quot;,&quot;type&quot;:&quot;text&quot;}]</stringValue>
                         </value>
                     </inputParameters>
                     <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
@@ -5126,7 +5167,7 @@
             <targetReference>Get_Performance_Evaluation</targetReference>
         </connector>
     </start>
-    <status>Draft</status>
+    <status>Active</status>
     <textTemplates>
         <name>tt_AllRatingComments</name>
         <isViewedAsPlainText>true</isViewedAsPlainText>
@@ -5224,6 +5265,22 @@
         <isInput>false</isInput>
         <isOutput>false</isOutput>
         <scale>0</scale>
+    </variables>
+    <variables>
+        <name>varExecInitiativeAchievementCount</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>0</scale>
+    </variables>
+    <variables>
+        <name>varExecInitiativeAchievementSum</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>2</scale>
     </variables>
     <variables>
         <name>recordId</name>

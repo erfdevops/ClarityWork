@@ -1,0 +1,222 @@
+<template>
+    <template if:false={isAuthorized}>
+        <div class="slds-illustration slds-illustration_small slds-p-around_large slds-text-align_center">
+            <lightning-icon icon-name="utility:lock" size="large" variant="warning"></lightning-icon>
+            <h3 class="slds-text-heading_medium slds-m-top_medium">Access Restricted</h3>
+            <p class="slds-text-body_regular slds-m-top_small slds-text-color_weak">You do not have permission to access this tool.</p>
+        </div>
+    </template>
+    <template if:true={isAuthorized}>
+    <div class="slds-card slds-p-around_medium">
+
+        <!-- SUCCESS STATE — replaces form after a successful execute -->
+        <template if:true={showSuccessState}>
+            <div class="slds-illustration slds-illustration_large slds-p-around_large slds-text-align_center">
+                <lightning-icon icon-name="utility:success" size="large" variant="success"></lightning-icon>
+                <h3 class="slds-text-heading_large slds-m-top_medium">Setup Complete</h3>
+                <p class="slds-text-body_regular slds-text-color_weak slds-m-top_small">
+                    {executeResult.plansCreated} Annual Plan(s) created &mdash;
+                    {executeResult.goalsCreated} goal(s) created &mdash;
+                    {executeResult.stagesCreated} stage(s) created &mdash;
+                    {executeResult.goalsCopied} goal(s) copied forward
+                </p>
+                <div class="slds-m-top_large">
+                    <lightning-button label="Upload Another CSV" variant="brand" onclick={handleStartOver}></lightning-button>
+                </div>
+            </div>
+        </template>
+
+        <!-- MAIN FORM — hidden after success -->
+        <template if:false={showSuccessState}>
+
+        <!-- Header -->
+        <div class="slds-card__header slds-grid slds-grid_align-spread slds-m-bottom_medium">
+            <div>
+                <h1 class="slds-text-heading_medium">Smart Goal Bulk Setup</h1>
+                <p class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">
+                    Upload a CSV of new goals for the coming fiscal year. Employees not in the CSV will have their current-year goals copied forward automatically.
+                </p>
+            </div>
+        </div>
+
+        <!-- Fiscal Year selectors -->
+        <div class="slds-grid slds-gutters slds-m-bottom_medium">
+            <div class="slds-col slds-size_1-of-2">
+                <lightning-combobox
+                    label="Copy From (Source Year)"
+                    value={sourceFY}
+                    options={fyOptions}
+                    onchange={handleSourceFYChange}
+                    disabled={isLoading}>
+                </lightning-combobox>
+            </div>
+            <div class="slds-col slds-size_1-of-2">
+                <lightning-combobox
+                    label="Set Up Goals For (Target Year)"
+                    value={targetFY}
+                    options={fyOptions}
+                    onchange={handleTargetFYChange}
+                    disabled={isLoading}>
+                </lightning-combobox>
+            </div>
+        </div>
+
+        <!-- FY validation warning -->
+        <template if:true={fyWarning}>
+            <div class="slds-notify slds-notify_alert slds-alert_warning slds-m-bottom_medium" role="alert">
+                <span class="slds-assistive-text">warning</span>
+                <lightning-icon icon-name="utility:warning" alternative-text="warning" variant="warning" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                {fyWarning}
+            </div>
+        </template>
+
+        <!-- File upload -->
+        <div class="slds-form-element slds-m-bottom_medium">
+            <label class="slds-form-element__label" for="csvInput">Upload Goals CSV</label>
+            <div class="slds-form-element__control">
+                <input
+                    type="file"
+                    id="csvInput"
+                    accept=".csv"
+                    onchange={handleFileChange}
+                    disabled={isLoading}
+                    class="slds-file-selector__input" />
+            </div>
+            <template if:true={fileName}>
+                <p class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">
+                    Loaded: {fileName} &mdash; {rowCount} goal rows for {employeeCount} employees
+                </p>
+            </template>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="slds-grid slds-gutters slds-m-bottom_medium">
+            <div class="slds-col">
+                <lightning-button
+                    label="Preview"
+                    variant="neutral"
+                    onclick={handlePreview}
+                    disabled={previewDisabled}>
+                </lightning-button>
+                <lightning-button
+                    label="Execute"
+                    variant="brand"
+                    onclick={handleExecute}
+                    disabled={executeDisabled}
+                    class="slds-m-left_small">
+                </lightning-button>
+                <lightning-button
+                    label="Clear"
+                    variant="destructive-text"
+                    onclick={handleClear}
+                    disabled={isLoading}
+                    class="slds-m-left_small">
+                </lightning-button>
+            </div>
+            <template if:true={isLoading}>
+                <div class="slds-col slds-col_bump-left slds-align-middle">
+                    <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                </div>
+            </template>
+        </div>
+
+        <!-- Preview results -->
+        <template if:true={showPreview}>
+            <div class="slds-m-bottom_medium">
+                <h2 class="slds-text-heading_small slds-m-bottom_small">Preview</h2>
+
+                <!-- Summary tiles -->
+                <div class="slds-grid slds-gutters slds-m-bottom_medium">
+                    <div class="slds-col slds-size_1-of-4">
+                        <div class="summary-tile slds-box slds-box_x-small slds-text-align_center">
+                            <p class="slds-text-heading_large slds-text-color_brand">{preview.newEmployeeCount}</p>
+                            <p class="slds-text-body_small">Employees (new goals)</p>
+                        </div>
+                    </div>
+                    <div class="slds-col slds-size_1-of-4">
+                        <div class="summary-tile slds-box slds-box_x-small slds-text-align_center">
+                            <p class="slds-text-heading_large slds-text-color_success">{preview.copyEmployeeCount}</p>
+                            <p class="slds-text-body_small">Employees (copy forward)</p>
+                        </div>
+                    </div>
+                    <div class="slds-col slds-size_1-of-4">
+                        <div class="summary-tile slds-box slds-box_x-small slds-text-align_center">
+                            <p class="slds-text-heading_large">{totalGoalCount}</p>
+                            <p class="slds-text-body_small">Total goals to create</p>
+                        </div>
+                    </div>
+                    <div class="slds-col slds-size_1-of-4">
+                        <div class="summary-tile slds-box slds-box_x-small slds-text-align_center">
+                            <p class="slds-text-heading_large slds-text-color_weak">{preview.plansToCreate}</p>
+                            <p class="slds-text-body_small">Annual Plans to create</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Warnings -->
+                <template if:true={hasWarnings}>
+                    <div class="slds-notify slds-notify_alert slds-alert_warning slds-m-bottom_small" role="alert">
+                        <lightning-icon icon-name="utility:warning" alternative-text="warning" variant="warning" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                        {preview.warningCount} email(s) in the CSV could not be matched to an active employee — they will be skipped. Review the table below.
+                    </div>
+                </template>
+
+                <!-- Employee detail table -->
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered slds-table_fixed-layout">
+                    <thead>
+                        <tr class="slds-line-height_reset">
+                            <th scope="col" style="width:30%"><div class="slds-truncate">Employee</div></th>
+                            <th scope="col" style="width:30%"><div class="slds-truncate">Email</div></th>
+                            <th scope="col" style="width:15%"><div class="slds-truncate">Action</div></th>
+                            <th scope="col" style="width:10%"><div class="slds-truncate">Goals</div></th>
+                            <th scope="col" style="width:15%"><div class="slds-truncate">Plan Exists?</div></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={preview.employees} for:item="emp">
+                            <tr key={emp.email} class={emp.rowClass}>
+                                <td><div class="slds-truncate" title={emp.name}>{emp.name}</div></td>
+                                <td><div class="slds-truncate" title={emp.email}>{emp.email}</div></td>
+                                <td><div class="slds-truncate">
+                                    <template if:true={emp.isNew}>
+                                        <lightning-badge label="New Goals" class="badge-new"></lightning-badge>
+                                    </template>
+                                    <template if:true={emp.isCopy}>
+                                        <lightning-badge label="Copy Forward" class="badge-copy"></lightning-badge>
+                                    </template>
+                                    <template if:true={emp.isWarn}>
+                                        <lightning-badge label="Not Found" class="badge-warn"></lightning-badge>
+                                    </template>
+                                </div></td>
+                                <td><div class="slds-truncate">{emp.goalCount}</div></td>
+                                <td><div class="slds-truncate">
+                                    <template if:true={emp.planExists}>Yes</template>
+                                    <template if:false={emp.planExists}>
+                                        <template if:false={emp.isWarn}>Will be created</template>
+                                        <template if:true={emp.isWarn}>—</template>
+                                    </template>
+                                </div></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+
+        <!-- Execute error (success is handled by the full-page success state above) -->
+        <template if:true={showErrorResult}>
+            <div class="slds-notify slds-notify_toast slds-theme_error slds-m-bottom_medium" role="alert">
+                <lightning-icon icon-name="utility:error" alternative-text="error" variant="inverse" size="small" class="slds-m-right_small"></lightning-icon>
+                <div>
+                    <p class="slds-text-heading_small">An error occurred</p>
+                    <template for:each={executeResult.errors} for:item="err">
+                        <p key={err}>{err}</p>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        </template><!-- end if:false={showSuccessState} -->
+    </div>
+    </template>
+</template>
