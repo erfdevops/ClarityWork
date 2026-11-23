@@ -46,6 +46,7 @@ public with sharing class SmartGoalBulkUploadController {
         @AuraEnabled public Boolean success         = true;
         @AuraEnabled public Integer plansCreated    = 0;
         @AuraEnabled public Integer goalsCreated    = 0;
+        @AuraEnabled public Integer initiativesCreated = 0;
         @AuraEnabled public Integer stagesCreated   = 0;
         @AuraEnabled public Integer goalsCopied     = 0;
         @AuraEnabled public List<String> errors     = new List<String>();
@@ -205,13 +206,36 @@ public with sharing class SmartGoalBulkUploadController {
                 result.goalsCreated = goalsToInsert.size();
             }
 
-            // ── Step 3: Create Initiative Stages for new goals ───────────────
+            // ── Step 3: Create an Initiative per new goal ────────────────────
+            // Stages reference the Initiative on their layout, so each goal needs
+            // a matching Initiative record for the fiscal year.
+            List<Initiative__c> initiativesToInsert = new List<Initiative__c>();
+            for (Integer i = 0; i < goalsToInsert.size(); i++) {
+                String empKey = goalInsertKeys[i].substringBefore('|');
+                String gName  = goalInsertKeys[i].substringAfter('|');
+                Employee__c empRec = csvKeyToEmp.get(empKey);
+                initiativesToInsert.add(new Initiative__c(
+                    Initiative_Name__c = gName,
+                    Employee__c        = empRec != null ? empRec.Id : null,
+                    Fiscal_Year__c     = targetFY,
+                    Start_Date__c      = fiscalYearStart(targetFY),
+                    End_Date__c        = fiscalYearEnd(targetFY),
+                    Status__c          = 'In Progress'
+                ));
+            }
+            if (!initiativesToInsert.isEmpty()) {
+                insert initiativesToInsert;
+                result.initiativesCreated = initiativesToInsert.size();
+            }
+
+            // ── Step 4: Create Initiative Stages for new goals ───────────────
             List<Initiative_Stage__c> stagesToInsert = new List<Initiative_Stage__c>();
             for (Integer i = 0; i < goalsToInsert.size(); i++) {
                 String insertKey = goalInsertKeys[i];
                 String empKey = insertKey.substringBefore('|');
                 String gName  = insertKey.substringAfter('|');
                 Id goalId     = goalsToInsert[i].Id;
+                Id initiativeId = initiativesToInsert[i].Id;
                 Employee__c empRec = csvKeyToEmp.get(empKey);
                 Id empId = empRec != null ? empRec.Id : null;
 
@@ -228,14 +252,14 @@ public with sharing class SmartGoalBulkUploadController {
                 Boolean hasRowStages = false;
                 for (ParsedGoalRow r : goalRows) {
                     if (String.isNotBlank(r.stageName)) {
-                        stagesToInsert.add(buildStageFromRow(r, goalId, empId, ownerUserId, targetFY));
+                        stagesToInsert.add(buildStageFromRow(r, goalId, initiativeId, empId, ownerUserId, targetFY));
                         hasRowStages = true;
                     }
                 }
 
                 // If no row-based stages, auto-generate 12 monthly stages
                 if (!hasRowStages) {
-                    stagesToInsert.addAll(buildMonthlyStages(goalId, empId, ownerUserId, targetFY,
+                    stagesToInsert.addAll(buildMonthlyStages(goalId, initiativeId, empId, ownerUserId, targetFY,
                         gName, csvStageNames));
                 }
             }
@@ -244,7 +268,7 @@ public with sharing class SmartGoalBulkUploadController {
                 result.stagesCreated = stagesToInsert.size();
             }
 
-            // ── Step 4: Clone SMART Goals for non-CSV employees ──────────────
+            // ── Step 5: Clone SMART Goals for non-CSV employees ──────────────
             List<SMART_Goal__c> goalsToCopy = new List<SMART_Goal__c>();
             for (String email : emailToEmp.keySet()) {
                 Employee__c emp = emailToEmp.get(email);
@@ -425,11 +449,12 @@ public with sharing class SmartGoalBulkUploadController {
     }
 
     private static Initiative_Stage__c buildStageFromRow(
-        ParsedGoalRow r, Id smartGoalId, Id employeeId, Id ownerId, String fiscalYear
+        ParsedGoalRow r, Id smartGoalId, Id initiativeId, Id employeeId, Id ownerId, String fiscalYear
     ) {
         Initiative_Stage__c s = new Initiative_Stage__c(
             Name                          = r.stageName,
             SMART_Goal__c                 = smartGoalId,
+            Initiative__c                 = initiativeId,
             Employee__c                   = employeeId,
             Fiscal_Year__c                = fiscalYear,
             Requires_Approval__c          = true,
@@ -445,6 +470,24 @@ public with sharing class SmartGoalBulkUploadController {
             try { s.End_Date__c = Date.parse(r.stageEndDate); } catch (Exception e) {}
         }
         return s;
+    }
+
+    // fiscalYear format: "October YYYY - September YYYY"
+    private static Integer fiscalYearStartYear(String fiscalYear) {
+        if (String.isBlank(fiscalYear)) return null;
+        try {
+            return Integer.valueOf(fiscalYear.substringAfter('October ').substringBefore(' -').trim());
+        } catch (Exception e) { return null; }
+    }
+
+    private static Date fiscalYearStart(String fiscalYear) {
+        Integer y = fiscalYearStartYear(fiscalYear);
+        return y == null ? null : Date.newInstance(y, 10, 1);
+    }
+
+    private static Date fiscalYearEnd(String fiscalYear) {
+        Integer y = fiscalYearStartYear(fiscalYear);
+        return y == null ? null : Date.newInstance(y + 1, 9, 30);
     }
 
     private static SMART_Goal__c cloneGoal(SMART_Goal__c src, Id newPlanId) {
@@ -463,7 +506,7 @@ public with sharing class SmartGoalBulkUploadController {
     // csvStageNames: up to 12 entries from the CSV (blank = auto-generate from goalName).
     // fiscalYear format: "October YYYY - September YYYY"
     private static List<Initiative_Stage__c> buildMonthlyStages(
-        Id smartGoalId, Id employeeId, Id ownerId, String fiscalYear,
+        Id smartGoalId, Id initiativeId, Id employeeId, Id ownerId, String fiscalYear,
         String goalName, List<String> csvStageNames
     ) {
         List<Initiative_Stage__c> stages = new List<Initiative_Stage__c>();
@@ -504,6 +547,7 @@ public with sharing class SmartGoalBulkUploadController {
             Initiative_Stage__c s = new Initiative_Stage__c(
                 Name                          = stageName,
                 SMART_Goal__c                 = smartGoalId,
+                Initiative__c                 = initiativeId,
                 Employee__c                   = employeeId,
                 Fiscal_Year__c                = fiscalYear,
                 Start_Date__c                 = Date.newInstance(yearNums[i], monthNums[i], 1),
