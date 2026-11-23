@@ -222,18 +222,20 @@ public with sharing class SmartGoalBulkUploadController {
                     csvStageNames = goalRows[0].stageNames;
                 }
 
+                Id ownerUserId = empRec != null ? empRec.User__c : null;
+
                 // Also handle the old row-per-stage format (Stage_Name on individual rows)
                 Boolean hasRowStages = false;
                 for (ParsedGoalRow r : goalRows) {
                     if (String.isNotBlank(r.stageName)) {
-                        stagesToInsert.add(buildStageFromRow(r, goalId));
+                        stagesToInsert.add(buildStageFromRow(r, goalId, empId, ownerUserId, targetFY));
                         hasRowStages = true;
                     }
                 }
 
                 // If no row-based stages, auto-generate 12 monthly stages
                 if (!hasRowStages) {
-                    stagesToInsert.addAll(buildMonthlyStages(goalId, empId, targetFY,
+                    stagesToInsert.addAll(buildMonthlyStages(goalId, empId, ownerUserId, targetFY,
                         gName, csvStageNames));
                 }
             }
@@ -422,13 +424,20 @@ public with sharing class SmartGoalBulkUploadController {
         return g;
     }
 
-    private static Initiative_Stage__c buildStageFromRow(ParsedGoalRow r, Id smartGoalId) {
+    private static Initiative_Stage__c buildStageFromRow(
+        ParsedGoalRow r, Id smartGoalId, Id employeeId, Id ownerId, String fiscalYear
+    ) {
         Initiative_Stage__c s = new Initiative_Stage__c(
-            Name               = r.stageName,
-            SMART_Goal__c      = smartGoalId,
-            Stage_Description__c = r.stageDescription,
-            Stage_Step_Number__c = r.stageStepNumber
+            Name                          = r.stageName,
+            SMART_Goal__c                 = smartGoalId,
+            Employee__c                   = employeeId,
+            Fiscal_Year__c                = fiscalYear,
+            Requires_Approval__c          = true,
+            Initiative_Stage_Hierarchy__c = 'Parent Stage',
+            Stage_Description__c          = r.stageDescription,
+            Stage_Step_Number__c          = r.stageStepNumber
         );
+        if (ownerId != null) s.OwnerId = ownerId;
         if (String.isNotBlank(r.stageStartDate)) {
             try { s.Start_Date__c = Date.parse(r.stageStartDate); } catch (Exception e) {}
         }
@@ -454,7 +463,7 @@ public with sharing class SmartGoalBulkUploadController {
     // csvStageNames: up to 12 entries from the CSV (blank = auto-generate from goalName).
     // fiscalYear format: "October YYYY - September YYYY"
     private static List<Initiative_Stage__c> buildMonthlyStages(
-        Id smartGoalId, Id employeeId, String fiscalYear,
+        Id smartGoalId, Id employeeId, Id ownerId, String fiscalYear,
         String goalName, List<String> csvStageNames
     ) {
         List<Initiative_Stage__c> stages = new List<Initiative_Stage__c>();
@@ -492,7 +501,7 @@ public with sharing class SmartGoalBulkUploadController {
             // Enforce 80-char limit
             if (stageName.length() > 80) stageName = stageName.left(80);
 
-            stages.add(new Initiative_Stage__c(
+            Initiative_Stage__c s = new Initiative_Stage__c(
                 Name                          = stageName,
                 SMART_Goal__c                 = smartGoalId,
                 Employee__c                   = employeeId,
@@ -501,7 +510,9 @@ public with sharing class SmartGoalBulkUploadController {
                 Stage_Step_Number__c          = i + 1,
                 Requires_Approval__c          = true,
                 Initiative_Stage_Hierarchy__c = 'Parent Stage'
-            ));
+            );
+            if (ownerId != null) s.OwnerId = ownerId;
+            stages.add(s);
         }
         return stages;
     }
