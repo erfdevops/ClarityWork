@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Accuracy_Level__c</fullName>
-    <inlineHelpText>Allows values from 60 to 100% only.</inlineHelpText>
+    <inlineHelpText>Enter a value between 60 and 100, numbers only, no % or special characters.</inlineHelpText>
     <label>Accuracy Level</label>
     <precision>5</precision>
     <required>false</required>
