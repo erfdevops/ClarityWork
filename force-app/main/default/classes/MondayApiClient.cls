@@ -1,12 +1,14 @@
 /**
  * Thin GraphQL client for the Monday.com API.
- * Every call goes through the "Monday" Named Credential (per-user OAuth via the
- * "Monday" External Credential), so no tokens or secrets live in code or metadata.
+ * Every call goes through the "Monday" Named Credential, which uses the shared "Service" principal of the
+ * "Monday" External Credential. The API token is entered in Setup on that principal and merged into the
+ * Authorization header by Salesforce, so no tokens or secrets live in code or metadata.
  */
 public with sharing class MondayApiClient {
 
     private static final String ENDPOINT    = 'callout:Monday';
     private static final String API_VERSION = '2025-04';
+    private static final String AUTH_HEADER = '{!$Credential.Monday.Token}';
 
     public class MondayException extends Exception {}
 
@@ -20,6 +22,9 @@ public with sharing class MondayApiClient {
         req.setMethod('POST');
         req.setHeader('Content-Type', 'application/json');
         req.setHeader('API-Version', API_VERSION);
+        // Salesforce substitutes the saved principal token server-side (Named Credential allows header merge fields).
+        // The External Credential's own custom header was not being applied, so the header is set here instead.
+        req.setHeader('Authorization', AUTH_HEADER);
         req.setTimeout(30000);
         req.setBody(JSON.serialize(body));
 
