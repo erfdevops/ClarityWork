@@ -17,6 +17,46 @@
         <enabled>true</enabled>
         <externalCredentialPrincipal>Monday-Service</externalCredentialPrincipal>
     </externalCredentialPrincipalAccesses>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Activity.Monday_Board_Id__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Activity.Monday_Item_Id__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Activity.Monday_Item_URL__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Activity.Monday_Last_Synced__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Activity.Monday_Sync_Error__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Activity.Monday_Sync_Status__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Task_Smart_Goal__c.Smart_Goal__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Task_Smart_Goal__c.Task__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
     <hasActivationRequired>false</hasActivationRequired>
     <label>Monday Integration</label>
 </PermissionSet>

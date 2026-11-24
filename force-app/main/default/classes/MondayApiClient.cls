@@ -80,6 +80,26 @@ public with sharing class MondayApiClient {
         return (Map<String, Object>) data.get('create_item');
     }
 
+    // Returns the new group's Id
+    public static String createGroup(String boardId, String groupName) {
+        Map<String, Object> data = query(
+            'mutation ($board: ID!, $name: String!) { create_group (board_id: $board, group_name: $name) { id } }',
+            new Map<String, Object>{ 'board' => boardId, 'name' => groupName }
+        );
+        return (String) ((Map<String, Object>) data.get('create_group')).get('id');
+    }
+
+    // Monday user Id for an email address, or null when no Monday user has that email
+    public static String findUserIdByEmail(String email) {
+        if (String.isBlank(email)) return null;
+        Map<String, Object> data = query(
+            'query ($emails: [String]) { users (emails: $emails) { id email } }',
+            new Map<String, Object>{ 'emails' => new List<String>{ email } }
+        );
+        List<Object> users = (List<Object>) data.get('users');
+        return (users == null || users.isEmpty()) ? null : String.valueOf(((Map<String, Object>) users[0]).get('id'));
+    }
+
     // columnType is a Monday ColumnType enum value, e.g. 'long_text' or 'link'; returns the new column Id
     public static String createColumn(String boardId, String title, String columnType) {
         Map<String, Object> data = query(

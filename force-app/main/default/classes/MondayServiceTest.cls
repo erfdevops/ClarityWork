@@ -18,7 +18,11 @@ private class MondayServiceTest {
             }
             res.setStatusCode(200);
             Object data;
-            if (body.contains('create_item')) {
+            if (body.contains('create_group')) {
+                data = new Map<String, Object>{ 'create_group' => new Map<String, Object>{ 'id' => 'new_group' } };
+            } else if (body.contains('users (emails')) {
+                data = new Map<String, Object>{ 'users' => new List<Object>{ new Map<String, Object>{ 'id' => '77' } } };
+            } else if (body.contains('create_item')) {
                 data = new Map<String, Object>{ 'create_item' => new Map<String, Object>{
                     'id' => '555', 'url' => 'https://dallaserf.monday.com/boards/123/pulses/555' } };
             } else if (body.contains('create_column')) {
@@ -49,11 +53,17 @@ private class MondayServiceTest {
     private static Map<String, Object> boardJson() {
         return new Map<String, Object>{
             'id' => '123', 'name' => 'Mine', 'url' => 'https://dallaserf.monday.com/boards/123',
-            'groups' => new List<Object>{ new Map<String, Object>{ 'id' => 'topics', 'title' => 'This Week' } },
+            'groups' => new List<Object>{
+                new Map<String, Object>{ 'id' => 'topics', 'title' => 'This Week' },
+                new Map<String, Object>{ 'id' => 'goal_grp', 'title' => '  technology support |  user support ' }
+            },
             'columns' => new List<Object>{
                 column('status', 'Status', 'status', new Map<String, Object>{ '0' => 'Working on it', '1' => 'Done', '5' => '' }),
                 column('priority', 'Priority', 'status', new Map<String, Object>{ '0' => 'High', '1' => 'Medium', '2' => 'Low' }),
-                column('date4', 'Due date', 'date', null)
+                column('date4', 'Due date', 'date', null),
+                column('mos', 'Measure of Success', 'long_text', null),
+                column('mgr', 'Manager', 'people', null),
+                column('person', 'Owner', 'people', null)
             }
         };
     }
@@ -70,6 +80,10 @@ private class MondayServiceTest {
         insert new Task(Subject = 'Monday test', Kanban_Status__c = 'In Progress', Status = 'In Progress',
                         Priority = 'High', ActivityDate = Date.newInstance(2026, 11, 3),
                         Description = 'Details');
+        Initiative__c goal = new Initiative__c(Initiative_Name__c = 'Technology Support | User Support');
+        insert goal;
+        insert new Task(Subject = 'Goal task', Kanban_Status__c = 'Queue', Status = 'Not Started',
+                        Priority = 'Normal', Smart_Goal__c = goal.Id);
         // Set up here, not in each test: DML in the test body would block the later callout
         insertBoard();
     }
@@ -88,10 +102,11 @@ private class MondayServiceTest {
         Assert.areEqual('status', rec.Status_Column_Id__c);
         Assert.areEqual('priority', rec.Priority_Column_Id__c);
         Assert.areEqual('date4', rec.Date_Column_Id__c);
-        Assert.areEqual('long_text_new', rec.Description_Column_Id__c);
+        Assert.areEqual('long_text_new', rec.Description_Column_Id__c, 'Measure of Success is not reused as Description');
         Assert.areEqual('link_new', rec.Link_Column_Id__c);
+        Assert.areEqual('person', rec.Owner_Column_Id__c, 'Owner column chosen, not Manager');
         Assert.isFalse(rec.Status_Labels__c.contains('""'), 'blank labels are dropped');
-        Assert.areEqual(1, ctx.groups.size());
+        Assert.areEqual(2, ctx.groups.size());
         Assert.areEqual('topics', ctx.groups[0].value);
     }
 
@@ -99,7 +114,7 @@ private class MondayServiceTest {
     static void createItemLinksTask() {
         MondayMock mock = new MondayMock();
         Test.setMock(HttpCalloutMock.class, mock);
-        Task t = [SELECT Id FROM Task LIMIT 1];
+        Task t = [SELECT Id FROM Task WHERE Subject = 'Monday test' LIMIT 1];
 
         Test.startTest();
         MondayController.createMondayItem(t.Id, 'topics');
@@ -109,7 +124,8 @@ private class MondayServiceTest {
         Assert.areEqual('555', t.Monday_Item_Id__c);
         Assert.areEqual('Synced', t.Monday_Sync_Status__c);
         Assert.areEqual('123', t.Monday_Board_Id__c);
-        String sent = mock.bodies[0];
+        String sent = '';
+        for (String b : mock.bodies) if (b.contains('create_item')) sent = b;
         Assert.isTrue(sent.contains('Working on it'), 'status label mapped');
         Assert.isTrue(sent.contains('High'), 'priority label mapped');
         Assert.isTrue(sent.contains('2026-11-03'), 'due date sent');
@@ -121,7 +137,7 @@ private class MondayServiceTest {
         MondayMock mock = new MondayMock();
         mock.fail = true;
         Test.setMock(HttpCalloutMock.class, mock);
-        Task t = [SELECT Id FROM Task LIMIT 1];
+        Task t = [SELECT Id FROM Task WHERE Subject = 'Monday test' LIMIT 1];
 
         Test.startTest();
         MondayService.createItemForTask(t.Id, 'topics');
@@ -157,7 +173,61 @@ private class MondayServiceTest {
 
         Assert.isTrue(ctx.connected);
         Assert.areEqual('123', ctx.boardId);
-        Assert.areEqual(1, ctx.groups.size());
+        Assert.areEqual(2, ctx.groups.size());
+    }
+
+    @IsTest
+    static void goalGroupMatchedByNameAndOwnerAssigned() {
+        MondayMock mock = new MondayMock();
+        Test.setMock(HttpCalloutMock.class, mock);
+        Task t = [SELECT Id FROM Task WHERE Subject = 'Goal task' LIMIT 1];
+
+        Test.startTest();
+        MondayService.createItemInGoalGroup(t.Id);
+        Test.stopTest();
+
+        t = [SELECT Monday_Item_Id__c, Monday_Sync_Status__c FROM Task WHERE Id = :t.Id];
+        Assert.areEqual('555', t.Monday_Item_Id__c);
+        Assert.areEqual('Synced', t.Monday_Sync_Status__c);
+        String created = '';
+        for (String b : mock.bodies) {
+            Assert.isFalse(b.contains('create_group'), 'existing group reused despite case/spacing differences');
+            if (b.contains('create_item')) created = b;
+        }
+        Assert.isTrue(created.contains('goal_grp'), 'posted to the goal group');
+        Assert.isTrue(created.contains('personsAndTeams') && created.contains('77'), 'owner assigned');
+    }
+
+    @IsTest
+    static void goalGroupCreatedWhenMissing() {
+        MondayMock mock = new MondayMock();
+        Test.setMock(HttpCalloutMock.class, mock);
+        Task t = [SELECT Id FROM Task WHERE Subject = 'Goal task' LIMIT 1];
+        Initiative__c goal = [SELECT Id FROM Initiative__c LIMIT 1];
+        goal.Initiative_Name__c = 'Brand New Goal';
+        update goal;
+
+        Test.startTest();
+        MondayService.createItemInGoalGroup(t.Id);
+        Test.stopTest();
+
+        String created = '';
+        Boolean groupMade = false;
+        for (String b : mock.bodies) {
+            if (b.contains('create_group') && b.contains('Brand New Goal')) groupMade = true;
+            if (b.contains('create_item')) created = b;
+        }
+        Assert.isTrue(groupMade, 'missing goal group is created');
+        Assert.isTrue(created.contains('new_group'), 'item posted to the new group');
+    }
+
+    @IsTest
+    static void goalGroupRequiresGoal() {
+        Test.setMock(HttpCalloutMock.class, new MondayMock());
+        Task t = [SELECT Id FROM Task WHERE Subject = 'Monday test' LIMIT 1];
+        Boolean threw = false;
+        try { MondayService.createItemInGoalGroup(t.Id); } catch (MondayApiClient.MondayException e) { threw = true; }
+        Assert.isTrue(threw, 'a task without a SMART goal is refused');
     }
 
     @IsTest
@@ -178,7 +248,7 @@ private class MondayServiceTest {
         MondayMock mock = new MondayMock();
         mock.fail = true;
         Test.setMock(HttpCalloutMock.class, mock);
-        Task t = [SELECT Id FROM Task LIMIT 1];
+        Task t = [SELECT Id FROM Task WHERE Subject = 'Monday test' LIMIT 1];
 
         Test.startTest();
         List<String> messages = new List<String>();
@@ -201,7 +271,7 @@ private class MondayServiceTest {
         insert new Monday_Board__c(
             Name = 'Mine', Board_Id__c = '123',
             Status_Column_Id__c = 'status', Priority_Column_Id__c = 'priority', Date_Column_Id__c = 'date4',
-            Description_Column_Id__c = 'long_text_new', Link_Column_Id__c = 'link_new',
+            Description_Column_Id__c = 'long_text_new', Link_Column_Id__c = 'link_new', Owner_Column_Id__c = 'person',
             Status_Labels__c = '["Working on it","Done"]', Priority_Labels__c = '["High","Medium","Low"]'
         );
     }
