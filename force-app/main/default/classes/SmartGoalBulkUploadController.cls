@@ -151,6 +151,7 @@ public with sharing class SmartGoalBulkUploadController {
             Map<Id, Annual_Plan__c>  empToSrcPlan = getAnnualPlans(sourceFY);
             Map<Id, List<SMART_Goal__c>> planToSrcGoals = getSmartGoalsByPlan(empToSrcPlan.values());
             Map<Id, Annual_Plan__c>  empToTgtPlan = getAnnualPlans(targetFY);
+            Map<Id, List<SMART_Goal__c>> planToTgtGoals = getSmartGoalsByPlan(empToTgtPlan.values());
 
             Map<String, Map<String, List<ParsedGoalRow>>> csvMap = groupRowsByKey(rows);
             Map<String, Employee__c> csvKeyToEmp = resolveCsvEmployees(csvMap.keySet(), emailToEmp, nameToEmp);
@@ -279,6 +280,10 @@ public with sharing class SmartGoalBulkUploadController {
                 if (srcGoals == null || srcGoals.isEmpty()) continue;
                 Annual_Plan__c tgtPlan = empToTgtPlan.get(emp.Id);
                 if (tgtPlan == null) continue;
+                // Never copy over a plan that already has goals, so re-running an
+                // upload cannot duplicate what a previous run created.
+                List<SMART_Goal__c> tgtGoals = planToTgtGoals.get(tgtPlan.Id);
+                if (tgtGoals != null && !tgtGoals.isEmpty()) continue;
                 for (SMART_Goal__c sg : srcGoals) {
                     goalsToCopy.add(cloneGoal(sg, tgtPlan.Id));
                 }
@@ -356,13 +361,22 @@ public with sharing class SmartGoalBulkUploadController {
     private static List<Map<String, Employee__c>> buildEmployeeMaps() {
         Map<String, Employee__c> byEmail = new Map<String, Employee__c>();
         Map<String, Employee__c> byName  = new Map<String, Employee__c>();
-        for (Employee__c e : [
+        List<Employee__c> emps = [
             SELECT Id, Name, User__c, User__r.Email, User__r.Name, Manager__c
             FROM Employee__c
             WHERE Active__c = true AND User__c != null
-        ]) {
+        ];
+        for (Employee__c e : emps) {
             if (String.isNotBlank(e.User__r.Email)) byEmail.put(e.User__r.Email.toLowerCase(), e);
             if (String.isNotBlank(e.User__r.Name))  byName.put(e.User__r.Name.toLowerCase(), e);
+        }
+        // A CSV may identify people by their Employee record name rather than their
+        // User name, and the two differ for some staff. Index those too, without
+        // letting them displace a User name match.
+        for (Employee__c e : emps) {
+            if (String.isBlank(e.Name)) continue;
+            String nameKey = e.Name.toLowerCase();
+            if (!byName.containsKey(nameKey)) byName.put(nameKey, e);
         }
         return new List<Map<String, Employee__c>>{ byEmail, byName };
     }
