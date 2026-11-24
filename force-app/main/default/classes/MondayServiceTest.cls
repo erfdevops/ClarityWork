@@ -4,7 +4,14 @@ private class MondayServiceTest {
     // Routes each GraphQL request to a canned Monday.com response
     private class MondayMock implements HttpCalloutMock {
         Boolean fail = false;
+        Boolean itemMissing = false;
         List<String> bodies = new List<String>();
+
+        // True when some request contained the operation and the text
+        Boolean sent(String operation, String text) {
+            for (String b : bodies) if (b.contains(operation) && b.contains(text)) return true;
+            return false;
+        }
 
         public HttpResponse respond(HttpRequest req) {
             String body = req.getBody();
@@ -18,7 +25,15 @@ private class MondayServiceTest {
             }
             res.setStatusCode(200);
             Object data;
-            if (body.contains('create_group')) {
+            if (body.contains('change_multiple_column_values')) {
+                data = new Map<String, Object>{ 'change_multiple_column_values' => new Map<String, Object>{ 'id' => '555' } };
+            } else if (body.contains('move_item_to_group')) {
+                data = new Map<String, Object>{ 'move_item_to_group' => new Map<String, Object>{ 'id' => '555' } };
+            } else if (body.contains('items (ids')) {
+                data = new Map<String, Object>{ 'items' => itemMissing ? new List<Object>() : new List<Object>{
+                    new Map<String, Object>{ 'id' => '555', 'state' => 'active',
+                        'group' => new Map<String, Object>{ 'id' => 'topics' } } } };
+            } else if (body.contains('create_group')) {
                 data = new Map<String, Object>{ 'create_group' => new Map<String, Object>{ 'id' => 'new_group' } };
             } else if (body.contains('users (emails')) {
                 data = new Map<String, Object>{ 'users' => new List<Object>{ new Map<String, Object>{ 'id' => '77' } } };
@@ -177,18 +192,21 @@ private class MondayServiceTest {
     }
 
     @IsTest
-    static void goalGroupMatchedByNameAndOwnerAssigned() {
+    static void syncCreatesItemInGoalGroupAndAssignsOwner() {
         MondayMock mock = new MondayMock();
         Test.setMock(HttpCalloutMock.class, mock);
         Task t = [SELECT Id FROM Task WHERE Subject = 'Goal task' LIMIT 1];
 
         Test.startTest();
-        MondayService.createItemInGoalGroup(t.Id);
+        MondayService.TaskMondayState s = MondayController.syncTaskToMonday(t.Id, true);
         Test.stopTest();
 
-        t = [SELECT Monday_Item_Id__c, Monday_Sync_Status__c FROM Task WHERE Id = :t.Id];
+        Assert.isTrue(s.enabled);
+        Assert.areEqual('Synced', s.status);
+        Assert.areEqual('https://dallaserf.monday.com/boards/123/pulses/555', s.url);
+        t = [SELECT Monday_Item_Id__c, Post_To_Monday__c FROM Task WHERE Id = :t.Id];
         Assert.areEqual('555', t.Monday_Item_Id__c);
-        Assert.areEqual('Synced', t.Monday_Sync_Status__c);
+        Assert.isTrue(t.Post_To_Monday__c, 'choice saved on the task');
         String created = '';
         for (String b : mock.bodies) {
             Assert.isFalse(b.contains('create_group'), 'existing group reused despite case/spacing differences');
@@ -199,7 +217,7 @@ private class MondayServiceTest {
     }
 
     @IsTest
-    static void goalGroupCreatedWhenMissing() {
+    static void syncCreatesMissingGoalGroup() {
         MondayMock mock = new MondayMock();
         Test.setMock(HttpCalloutMock.class, mock);
         Task t = [SELECT Id FROM Task WHERE Subject = 'Goal task' LIMIT 1];
@@ -208,26 +226,119 @@ private class MondayServiceTest {
         update goal;
 
         Test.startTest();
-        MondayService.createItemInGoalGroup(t.Id);
+        MondayService.syncTask(t.Id, true);
         Test.stopTest();
 
-        String created = '';
-        Boolean groupMade = false;
-        for (String b : mock.bodies) {
-            if (b.contains('create_group') && b.contains('Brand New Goal')) groupMade = true;
-            if (b.contains('create_item')) created = b;
-        }
-        Assert.isTrue(groupMade, 'missing goal group is created');
-        Assert.isTrue(created.contains('new_group'), 'item posted to the new group');
+        Assert.isTrue(mock.sent('create_group', 'Brand New Goal'), 'missing goal group is created');
+        Assert.isTrue(mock.sent('create_item', 'new_group'), 'item posted to the new group');
     }
 
     @IsTest
-    static void goalGroupRequiresGoal() {
-        Test.setMock(HttpCalloutMock.class, new MondayMock());
+    static void syncWithoutGoalUsesNoGoalGroup() {
+        MondayMock mock = new MondayMock();
+        Test.setMock(HttpCalloutMock.class, mock);
         Task t = [SELECT Id FROM Task WHERE Subject = 'Monday test' LIMIT 1];
+
+        Test.startTest();
+        MondayService.syncTask(t.Id, true);
+        Test.stopTest();
+
+        Assert.isTrue(mock.sent('create_group', MondayService.NO_GOAL_GROUP));
+        Assert.isTrue(mock.sent('create_item', 'new_group'));
+    }
+
+    @IsTest
+    static void syncUpdatesLinkedItemAndMovesGroup() {
+        MondayMock mock = new MondayMock();
+        Test.setMock(HttpCalloutMock.class, mock);
+        Task t = [SELECT Id FROM Task WHERE Subject = 'Goal task' LIMIT 1];
+        update new Task(Id = t.Id, Monday_Item_Id__c = '555', Monday_Board_Id__c = '123', Post_To_Monday__c = true,
+                        Subject = 'Renamed task');
+
+        Test.startTest();
+        MondayService.TaskMondayState s = MondayService.syncTask(t.Id, true);
+        Test.stopTest();
+
+        Assert.areEqual('Synced', s.status);
+        Assert.isFalse(mock.sent('create_item', ''), 'linked item is updated, not duplicated');
+        Assert.isTrue(mock.sent('change_multiple_column_values', 'Renamed task'), 'name and columns updated');
+        Assert.isTrue(mock.sent('move_item_to_group', 'goal_grp'), 'moved from This Week to the goal group');
+    }
+
+    @IsTest
+    static void syncRecreatesItemDeletedInMonday() {
+        MondayMock mock = new MondayMock();
+        mock.itemMissing = true;
+        Test.setMock(HttpCalloutMock.class, mock);
+        Task t = [SELECT Id FROM Task WHERE Subject = 'Goal task' LIMIT 1];
+        update new Task(Id = t.Id, Monday_Item_Id__c = '999', Monday_Board_Id__c = '123', Post_To_Monday__c = true);
+
+        Test.startTest();
+        MondayService.syncTask(t.Id, true);
+        Test.stopTest();
+
+        Assert.isTrue(mock.sent('create_item', 'goal_grp'));
+        Assert.areEqual('555', [SELECT Monday_Item_Id__c FROM Task WHERE Id = :t.Id].Monday_Item_Id__c);
+    }
+
+    @IsTest
+    static void syncOffSavesChoiceWithoutCallouts() {
+        MondayMock mock = new MondayMock();
+        Test.setMock(HttpCalloutMock.class, mock);
+        Task t = [SELECT Id FROM Task WHERE Subject = 'Goal task' LIMIT 1];
+        update new Task(Id = t.Id, Post_To_Monday__c = true);
+
+        Test.startTest();
+        MondayService.TaskMondayState s = MondayController.syncTaskToMonday(t.Id, false);
+        Test.stopTest();
+
+        Assert.isFalse(s.enabled);
+        Assert.areEqual(0, mock.bodies.size(), 'nothing sent to Monday');
+        Assert.isFalse([SELECT Post_To_Monday__c FROM Task WHERE Id = :t.Id].Post_To_Monday__c);
+        Assert.isFalse(MondayController.getTaskMondayState(t.Id).enabled);
+    }
+
+    @IsTest
+    static void syncRecordsNotConnectedWhenOwnerHasNoBoard() {
+        Test.setMock(HttpCalloutMock.class, new MondayMock());
+        delete [SELECT Id FROM Monday_Board__c];
+        Task t = [SELECT Id FROM Task WHERE Subject = 'Goal task' LIMIT 1];
+
+        MondayService.TaskMondayState s = MondayService.syncTask(t.Id, true);
+
+        Assert.areEqual('Not Connected', s.status);
+        Assert.isNotNull(s.error);
+    }
+
+    @IsTest
+    static void syncFailureIsRecordedNotThrown() {
+        MondayMock mock = new MondayMock();
+        mock.fail = true;
+        Test.setMock(HttpCalloutMock.class, mock);
+        Task t = [SELECT Id FROM Task WHERE Subject = 'Goal task' LIMIT 1];
+
+        Test.startTest();
+        MondayService.TaskMondayState s = MondayService.syncTask(t.Id, true);
+        Test.stopTest();
+
+        Assert.areEqual('Error', s.status);
+        Assert.areEqual('Not Authenticated', s.error);
+    }
+
+    @IsTest
+    static void prefsDefaultOnAndCanBeTurnedOff() {
+        MondayService.MondayPrefs p = MondayController.getMondayPrefs();
+        Assert.isTrue(p.hasBoard);
+        Assert.isTrue(p.postByDefault, 'new boards default to posting');
+        p = MondayController.setMondayPostByDefault(false);
+        Assert.isFalse(p.postByDefault);
+        Assert.isFalse(MondayController.getMondayPrefs().postByDefault);
+
+        delete [SELECT Id FROM Monday_Board__c];
+        Assert.isFalse(MondayController.getMondayPrefs().hasBoard);
         Boolean threw = false;
-        try { MondayService.createItemInGoalGroup(t.Id); } catch (MondayApiClient.MondayException e) { threw = true; }
-        Assert.isTrue(threw, 'a task without a SMART goal is refused');
+        try { MondayController.setMondayPostByDefault(true); } catch (AuraHandledException e) { threw = true; }
+        Assert.isTrue(threw, 'no board to save the preference on');
     }
 
     @IsTest

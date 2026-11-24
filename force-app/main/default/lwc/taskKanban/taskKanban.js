@@ -44,6 +44,11 @@ import getTaskTags                from '@salesforce/apex/TaskKanbanController.ge
 import saveTaskTags               from '@salesforce/apex/TaskKanbanController.saveTaskTags';
 import getTemplateTags            from '@salesforce/apex/TaskKanbanController.getTemplateTags';
 import saveTemplateTags           from '@salesforce/apex/TaskKanbanController.saveTemplateTags';
+// Monday.com integration (monday-integration branch only)
+import getMondayPrefs             from '@salesforce/apex/MondayController.getMondayPrefs';
+import setMondayPostByDefault     from '@salesforce/apex/MondayController.setMondayPostByDefault';
+import getTaskMondayState         from '@salesforce/apex/MondayController.getTaskMondayState';
+import syncTaskToMonday           from '@salesforce/apex/MondayController.syncTaskToMonday';
 
 const MONTH_NAMES = ['January','February','March','April','May','June',
                      'July','August','September','October','November','December'];
@@ -169,6 +174,12 @@ export default class TaskKanban extends LightningElement {
     @track exportFormat = 'xlsx';
     @track exportFieldSelection = [];
     @track showPrefsModal = false;
+    // Monday.com "Post to Monday" switch
+    @track mondayPrefs = { hasBoard: false, postByDefault: true };
+    @track newPostToMonday = true;
+    @track editPostToMonday = false;
+    @track editMondayState = null;
+    _editMondayWasEnabled = false;
     @track showReportModal = false;
     @track selectMode = false;
     @track selectedTaskIds = [];
@@ -333,6 +344,7 @@ export default class TaskKanban extends LightningElement {
         const now = new Date();
         this.selectedMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         this._loadPrefs();
+        this._loadMondayPrefs();
         loadScript(this, SHEETJS_URL)
             .then(() => { this._xlsxReady = true; })
             .catch(() => { this._xlsxReady = false; });
@@ -379,7 +391,55 @@ export default class TaskKanban extends LightningElement {
 
     handleOpenPrefs() {
         this._initFieldSelection();
+        this._loadMondayPrefs();
         this.showPrefsModal = true;
+    }
+
+    // ─── Monday.com: "Post to Monday" switch + default preference ────────────
+    // The default is stored on the user's Monday board record in Salesforce, so it follows them across devices.
+    _loadMondayPrefs() {
+        getMondayPrefs()
+            .then(p => { if (p) this.mondayPrefs = p; })
+            .catch(() => { this.mondayPrefs = { hasBoard: false, postByDefault: true }; });
+    }
+
+    get mondayAvailable() {
+        return !!(this.mondayPrefs && this.mondayPrefs.hasBoard);
+    }
+
+    get editMondayUrl() {
+        return this.editMondayState ? this.editMondayState.url : null;
+    }
+
+    get editMondayProblem() {
+        const s = this.editMondayState;
+        return s && s.error && (s.status === 'Error' || s.status === 'Not Connected') ? s.error : null;
+    }
+
+    handleMondayDefaultChange(event) {
+        setMondayPostByDefault({ postByDefault: event.detail.checked })
+            .then(p => { this.mondayPrefs = p; })
+            .catch(err => this.showError('Could not save the Monday preference', err));
+    }
+
+    handleNewPostToMondayChange(event)  { this.newPostToMonday  = event.detail.checked; }
+    handleEditPostToMondayChange(event) { this.editPostToMonday = event.detail.checked; }
+
+    // Runs after a task is saved: creates/updates its Monday item, or records that posting is off.
+    // A Monday problem is shown as a warning and never fails the Salesforce save.
+    _syncMonday(taskId, enabled, wasEnabled) {
+        if (!this.mondayAvailable || (!enabled && !wasEnabled)) return Promise.resolve();
+        return syncTaskToMonday({ taskId, enabled })
+            .then(state => {
+                if (enabled && state && state.status !== 'Synced') {
+                    this.showToast('Saved, but not posted to Monday',
+                        (state && state.error) || 'Monday.com did not accept the task.', 'warning');
+                }
+            })
+            .catch(err => {
+                const msg = err && err.body ? err.body.message : '';
+                this.showToast('Saved, but not posted to Monday', msg, 'warning');
+            });
     }
 
     handleClosePrefs() {
@@ -1080,6 +1140,7 @@ export default class TaskKanban extends LightningElement {
             })
             .then(() => {
                 this.newTask = { Subject: '', Kanban_Status__c: 'Queue', Priority: 'Normal', ActivityDate: '', Description: '', timeSpent: null, assignedToId: '' };
+                this.newPostToMonday = this.mondayPrefs.postByDefault !== false;
                 this.newAssignOpen  = false;
                 this.newAssignedLabel = '';
                 this._newTaskSavedId = null;
@@ -1169,7 +1230,8 @@ export default class TaskKanban extends LightningElement {
                     if (this._newDescMentionedIds.length > 0) {
                         return saveMentions({ taskId, userIds: this._newDescMentionedIds });
                     }
-                });
+                })
+                .then(() => this._syncMonday(taskId, this.newPostToMonday, false));
         })
         .then(() => {
             this._newDescMentionedIds = [];
@@ -1294,6 +1356,20 @@ export default class TaskKanban extends LightningElement {
         this.editTaskTagSearch = '';
         this.showEditTaskTagDropdown = false;
         this.editTaskTagOptions = [];
+        // Existing tasks keep their own saved choice (tasks from before the switch start Off)
+        this.editPostToMonday = false;
+        this.editMondayState = null;
+        this._editMondayWasEnabled = false;
+        if (this.mondayAvailable) {
+            getTaskMondayState({ taskId: task.Id })
+                .then(s => {
+                    if (!s || this._editTaskId !== task.Id) return;
+                    this.editMondayState = s;
+                    this.editPostToMonday = s.enabled;
+                    this._editMondayWasEnabled = s.enabled;
+                })
+                .catch(() => { /* switch stays Off; saving still works */ });
+        }
         this.showEditModal = true;
         this.loadSyncedFiles();
         this.loadTaskSmartGoals();
@@ -1770,6 +1846,7 @@ export default class TaskKanban extends LightningElement {
                 return saveMentions({ taskId, userIds: this._editDescMentionedIds });
             }
         })
+        .then(() => this._syncMonday(taskId, this.editPostToMonday, this._editMondayWasEnabled))
         .then(() => {
             this.showEditModal  = false;
             this.editAssignOpen = false;

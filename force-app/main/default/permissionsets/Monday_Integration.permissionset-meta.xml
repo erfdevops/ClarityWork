@@ -49,6 +49,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Activity.Post_To_Monday__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Task_Smart_Goal__c.Smart_Goal__c</field>
         <readable>true</readable>
     </fieldPermissions>

@@ -40,15 +40,8 @@ public with sharing class MondayService {
 
     // The running user's connected board, or null
     public static Monday_Board__c getMyBoard() {
-        List<Monday_Board__c> boards = [
-            SELECT Id, Name, Board_Id__c, Board_URL__c, Status_Column_Id__c, Priority_Column_Id__c,
-                   Date_Column_Id__c, Description_Column_Id__c, Link_Column_Id__c, Owner_Column_Id__c,
-                   Default_Group_Id__c, Status_Labels__c, Priority_Labels__c
-            FROM Monday_Board__c
-            WHERE OwnerId = :UserInfo.getUserId()
-            ORDER BY LastModifiedDate DESC
-            LIMIT 1
-        ];
+        Id userId = UserInfo.getUserId();
+        List<Monday_Board__c> boards = Database.query(BOARD_QUERY + ' WHERE OwnerId = :userId ORDER BY LastModifiedDate DESC LIMIT 1');
         return boards.isEmpty() ? null : boards[0];
     }
 
@@ -179,6 +172,9 @@ public with sharing class MondayService {
         if (board == null) throw new MondayApiClient.MondayException('Connect a Monday.com board first.');
         if (String.isBlank(groupId)) throw new MondayApiClient.MondayException('Choose a Monday.com group.');
         Task t = taskForSync(taskId);
+        if (String.isNotBlank(t.Monday_Item_Id__c)) {
+            throw new MondayApiClient.MondayException('This task is already linked to a Monday.com item.');
+        }
 
         // ── 1. Callouts ──────────────────────────────────────────────────────
         Task upd = new Task(Id = taskId, Monday_Board_Id__c = board.Board_Id__c);
@@ -196,38 +192,130 @@ public with sharing class MondayService {
         return upd;
     }
 
-    // Creates the Monday item in the group named after the task's SMART goal (its Initiative name),
-    // creating that group on the user's board the first time the goal is used.
-    // Group names match ignoring case and extra spaces, so renaming a Monday group to the goal's
-    // name links it. Uses the task's primary goal (Task.Smart_Goal__c); one item per linked goal
-    // (Task_Smart_Goal__c) is a later step.
-    public static Task createItemInGoalGroup(Id taskId) {
-        Monday_Board__c board = getMyBoard();
-        if (board == null) throw new MondayApiClient.MondayException('Connect a Monday.com board first.');
+    // ─── Clarity Work "Post to Monday" switch ─────────────────────────────────
+
+    public static final String NO_GOAL_GROUP = 'No SMART Goal';
+
+    public class MondayPrefs {
+        @AuraEnabled public Boolean hasBoard = false;
+        @AuraEnabled public String  boardName;
+        @AuraEnabled public String  boardUrl;
+        @AuraEnabled public Boolean postByDefault = true;
+    }
+
+    public class TaskMondayState {
+        @AuraEnabled public Boolean enabled = false;
+        @AuraEnabled public String  status;
+        @AuraEnabled public String  url;
+        @AuraEnabled public String  error;
+    }
+
+    // The running user's Monday preferences (no callouts)
+    public static MondayPrefs getPrefs() {
+        MondayPrefs p = new MondayPrefs();
+        Monday_Board__c b = getMyBoard();
+        if (b != null) {
+            p.hasBoard      = true;
+            p.boardName     = b.Name;
+            p.boardUrl      = b.Board_URL__c;
+            p.postByDefault = b.Post_To_Monday_By_Default__c;
+        }
+        return p;
+    }
+
+    // Saves whether "Post to Monday" starts On for the user's new tasks
+    public static MondayPrefs setPostByDefault(Boolean postByDefault) {
+        Monday_Board__c b = getMyBoard();
+        if (b == null) throw new MondayApiClient.MondayException('Connect a Monday.com board first.');
+        update new Monday_Board__c(Id = b.Id, Post_To_Monday_By_Default__c = postByDefault == true);
+        return getPrefs();
+    }
+
+    public static TaskMondayState getTaskState(Id taskId) {
+        return stateOf(taskForSync(taskId));
+    }
+
+    // Called by Clarity Work after a task is saved.
+    // enabled = false: records the choice and stops posting (an existing Monday item is left as is).
+    // enabled = true: creates the item, or updates the linked one (name, columns, and goal group).
+    // The item goes on the task OWNER's board, in the group named after the task's SMART goal
+    // (Initiative name; matched ignoring case/spacing, created if missing). Tasks without a goal go
+    // to a "No SMART Goal" group. Uses the primary goal (Task.Smart_Goal__c); one item per linked
+    // goal (Task_Smart_Goal__c) is a later step. Monday failures are recorded on the task, never thrown.
+    public static TaskMondayState syncTask(Id taskId, Boolean enabled) {
         Task t = taskForSync(taskId);
-        String goalName = t.Smart_Goal__c == null ? null : t.Smart_Goal__r.Initiative_Name__c;
-        if (String.isBlank(goalName)) {
-            throw new MondayApiClient.MondayException('This task has no SMART goal, so there is no goal group to post it to.');
+        Task upd = new Task(Id = taskId, Post_To_Monday__c = (enabled == true));
+
+        if (enabled != true) {
+            if (t.Post_To_Monday__c) update upd;
+            t.Post_To_Monday__c = false;
+            return stateOf(t);
         }
 
-        // ── 1. Callouts ──────────────────────────────────────────────────────
-        Task upd = new Task(Id = taskId, Monday_Board_Id__c = board.Board_Id__c);
-        try {
-            Map<String, Object> mondayBoard = MondayApiClient.getBoard(board.Board_Id__c);
-            if (mondayBoard == null) {
-                throw new MondayApiClient.MondayException('Monday.com board ' + board.Board_Id__c + ' was not found or is not shared.');
+        Monday_Board__c board = new BoardLookup().forUser(t.OwnerId);
+        if (board == null) {
+            upd.Monday_Sync_Status__c = 'Not Connected';
+            upd.Monday_Sync_Error__c  = 'The task owner has not connected a Monday.com board.';
+        } else {
+            // ── 1. Callouts ──────────────────────────────────────────────────
+            try {
+                Map<String, Object> mondayBoard = MondayApiClient.getBoard(board.Board_Id__c);
+                if (mondayBoard == null) {
+                    throw new MondayApiClient.MondayException('Monday.com board "' + board.Name + '" was not found or is not shared.');
+                }
+                String goalName = (t.Smart_Goal__c == null || String.isBlank(t.Smart_Goal__r.Initiative_Name__c))
+                    ? NO_GOAL_GROUP : t.Smart_Goal__r.Initiative_Name__c;
+                String groupId = groupIdFor(mondayBoard, goalName);
+                if (groupId == null) groupId = MondayApiClient.createGroup(board.Board_Id__c, goalName.trim().left(255));
+
+                String currentGroup = (String.isNotBlank(t.Monday_Item_Id__c) && t.Monday_Board_Id__c == board.Board_Id__c)
+                    ? MondayApiClient.getItemGroupId(t.Monday_Item_Id__c) : null;
+                if (currentGroup == null) {
+                    // Never posted, moved to another owner's board, or deleted in Monday: create it
+                    upd.Monday_Board_Id__c = board.Board_Id__c;
+                    postItem(t, board, groupId, upd);
+                } else {
+                    Map<String, Object> vals = columnValues(t, board, ownerMondayId(t, board));
+                    vals.put('name', t.Subject);
+                    MondayApiClient.updateItem(board.Board_Id__c, t.Monday_Item_Id__c, JSON.serialize(vals));
+                    if (currentGroup != groupId) MondayApiClient.moveItemToGroup(t.Monday_Item_Id__c, groupId);
+                    upd.Monday_Sync_Status__c = 'Synced';
+                    upd.Monday_Sync_Error__c  = null;
+                    upd.Monday_Last_Synced__c = System.now();
+                }
+            } catch (Exception e) {
+                recordError(upd, e);
             }
-            String groupId = groupIdFor(mondayBoard, goalName);
-            if (groupId == null) groupId = MondayApiClient.createGroup(board.Board_Id__c, goalName.trim().left(255));
-            postItem(t, board, groupId, upd);
-        } catch (Exception e) {
-            recordError(upd, e);
         }
 
         // ── 2. DML ───────────────────────────────────────────────────────────
         update upd;
-        return upd;
+        return stateOf(taskForSync(taskId));
     }
+
+    private static TaskMondayState stateOf(Task t) {
+        TaskMondayState s = new TaskMondayState();
+        s.enabled = t.Post_To_Monday__c;
+        s.status  = t.Monday_Sync_Status__c;
+        s.url     = t.Monday_Item_URL__c;
+        s.error   = t.Monday_Sync_Error__c;
+        return s;
+    }
+
+    // A task can be assigned to someone else, whose board record the running user cannot see
+    // (Monday_Board__c is Private), so the owner's board is read without sharing.
+    private without sharing class BoardLookup {
+        Monday_Board__c forUser(Id userId) {
+            List<Monday_Board__c> boards = Database.query(BOARD_QUERY + ' WHERE OwnerId = :userId ORDER BY LastModifiedDate DESC LIMIT 1');
+            return boards.isEmpty() ? null : boards[0];
+        }
+    }
+
+    private static final String BOARD_QUERY =
+        'SELECT Id, Name, Board_Id__c, Board_URL__c, Status_Column_Id__c, Priority_Column_Id__c, ' +
+        'Date_Column_Id__c, Description_Column_Id__c, Link_Column_Id__c, Owner_Column_Id__c, ' +
+        'Default_Group_Id__c, Status_Labels__c, Priority_Labels__c, Post_To_Monday_By_Default__c ' +
+        'FROM Monday_Board__c';
 
     // Id of the board group whose title matches the goal name (case/spacing-insensitive), or null
     @TestVisible
@@ -245,31 +333,30 @@ public with sharing class MondayService {
     }
 
     private static Task taskForSync(Id taskId) {
-        Task t = [
-            SELECT Id, Subject, Description, ActivityDate, Kanban_Status__c, Priority, Monday_Item_Id__c,
-                   OwnerId, Smart_Goal__c, Smart_Goal__r.Initiative_Name__c
+        return [
+            SELECT Id, Subject, Description, ActivityDate, Kanban_Status__c, Priority, OwnerId,
+                   Smart_Goal__c, Smart_Goal__r.Initiative_Name__c, Post_To_Monday__c,
+                   Monday_Item_Id__c, Monday_Board_Id__c, Monday_Item_URL__c, Monday_Sync_Status__c, Monday_Sync_Error__c
             FROM Task WHERE Id = :taskId LIMIT 1
         ];
-        if (String.isNotBlank(t.Monday_Item_Id__c)) {
-            throw new MondayApiClient.MondayException('This task is already linked to a Monday.com item.');
-        }
-        return t;
     }
 
-    // Callouts only: looks up the owner's Monday user, creates the item, and fills the link fields on upd
-    private static void postItem(Task t, Monday_Board__c board, String groupId, Task upd) {
-        String mondayUserId = null;
-        if (String.isNotBlank(board.Owner_Column_Id__c)) {
-            try {
-                // Task.Owner is polymorphic (Name), so read the email from User directly
-                List<User> owners = [SELECT Email FROM User WHERE Id = :t.OwnerId LIMIT 1];
-                mondayUserId = owners.isEmpty() ? null : MondayApiClient.findUserIdByEmail(owners[0].Email);
-            } catch (Exception e) {
-                mondayUserId = null; // an unassigned item is better than no item
-            }
+    // Monday user Id of the task owner (matched by email), or null; never throws
+    private static String ownerMondayId(Task t, Monday_Board__c board) {
+        if (String.isBlank(board.Owner_Column_Id__c)) return null;
+        try {
+            // Task.Owner is polymorphic (Name), so read the email from User directly
+            List<User> owners = [SELECT Email FROM User WHERE Id = :t.OwnerId LIMIT 1];
+            return owners.isEmpty() ? null : MondayApiClient.findUserIdByEmail(owners[0].Email);
+        } catch (Exception e) {
+            return null; // an unassigned item is better than no item
         }
+    }
+
+    // Callouts only: creates the item (assigned to the owner) and fills the link fields on upd
+    private static void postItem(Task t, Monday_Board__c board, String groupId, Task upd) {
         Map<String, Object> item = MondayApiClient.createItem(
-            board.Board_Id__c, groupId, t.Subject, JSON.serialize(columnValues(t, board, mondayUserId))
+            board.Board_Id__c, groupId, t.Subject, JSON.serialize(columnValues(t, board, ownerMondayId(t, board)))
         );
         upd.Monday_Item_Id__c     = String.valueOf(item.get('id'));
         upd.Monday_Item_URL__c    = (String) item.get('url');

@@ -29,6 +29,45 @@ public with sharing class MondayController {
         }
     }
 
+    // ─── "Post to Monday" switch + preference ────────────────────────────────
+
+    @AuraEnabled
+    public static MondayService.MondayPrefs getMondayPrefs() {
+        try {
+            return MondayService.getPrefs();
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    @AuraEnabled
+    public static MondayService.MondayPrefs setMondayPostByDefault(Boolean postByDefault) {
+        try {
+            return MondayService.setPostByDefault(postByDefault);
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    @AuraEnabled
+    public static MondayService.TaskMondayState getTaskMondayState(String taskId) {
+        try {
+            return MondayService.getTaskState(taskId);
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    // Called after Clarity Work saves a task. Monday problems come back in the state (status 'Error'), not as exceptions.
+    @AuraEnabled
+    public static MondayService.TaskMondayState syncTaskToMonday(String taskId, Boolean enabled) {
+        try {
+            return MondayService.syncTask(taskId, enabled);
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
     // Returns the task's Monday fields; Monday_Sync_Status__c = 'Error' when the item could not be created
     @AuraEnabled
     public static Task createMondayItem(String taskId, String groupId) {

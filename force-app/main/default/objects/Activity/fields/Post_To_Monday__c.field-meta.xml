@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Post_To_Monday__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Clarity Work "Post to Monday" switch for this task. When checked, saving the task in Clarity Work creates or updates its Monday.com item. New tasks start from the user's preference (Monday_Board__c.Post_To_Monday_By_Default__c).</description>
+    <externalId>false</externalId>
+    <label>Post to Monday</label>
+    <trackHistory>false</trackHistory>
+    <type>Checkbox</type>
+</CustomField>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Post_To_Monday_By_Default__c</fullName>
+    <defaultValue>true</defaultValue>
+    <description>User preference: whether the "Post to Monday" switch starts On for new Clarity Work tasks. Set from Clarity Work Preferences.</description>
+    <externalId>false</externalId>
+    <label>Post to Monday by Default</label>
+    <trackHistory>false</trackHistory>
+    <type>Checkbox</type>
+</CustomField>

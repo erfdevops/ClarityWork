@@ -619,6 +619,26 @@
                         </div>
                     </div>
 
+                    <!-- Monday.com -->
+                    <template if:true={mondayAvailable}>
+                        <div class="slds-m-top_medium">
+                            <lightning-input
+                                type="toggle"
+                                label="Post to Monday?"
+                                message-toggle-active="Yes"
+                                message-toggle-inactive="No"
+                                checked={editPostToMonday}
+                                onchange={handleEditPostToMondayChange}>
+                            </lightning-input>
+                            <template if:true={editMondayUrl}>
+                                <a href={editMondayUrl} target="_blank" class="slds-text-body_small">Open in Monday</a>
+                            </template>
+                            <template if:true={editMondayProblem}>
+                                <p class="slds-text-color_error slds-text-body_small">Last Monday post: {editMondayProblem}</p>
+                            </template>
+                        </div>
+                    </template>
+
                     <!-- Attachments -->
                     <div class="slds-m-top_medium">
                         <h3 class="section-header">Attachments</h3>
@@ -987,6 +1007,22 @@
                                 </div>
                             </div>
                         </div>
+
+                    <!-- Monday.com -->
+                    <template if:true={mondayAvailable}>
+                        <template if:false={newTaskSaved}>
+                            <div class="slds-m-top_small">
+                                <lightning-input
+                                    type="toggle"
+                                    label="Post to Monday?"
+                                    message-toggle-active="Yes"
+                                    message-toggle-inactive="No"
+                                    checked={newPostToMonday}
+                                    onchange={handleNewPostToMondayChange}>
+                                </lightning-input>
+                            </div>
+                        </template>
+                    </template>
 
                     <!-- Attachments -->
                     <template if:false={newTaskSaved}>
@@ -1392,9 +1428,27 @@
         <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small">
             <div class="slds-modal__container">
                 <header class="slds-modal__header">
-                    <h2 class="slds-modal__title slds-hyphenate">Export Preferences</h2>
+                    <h2 class="slds-modal__title slds-hyphenate">Preferences</h2>
                 </header>
                 <div class="slds-modal__content slds-p-around_medium">
+                    <p class="prefs-section-label">Monday.com</p>
+                    <template if:true={mondayAvailable}>
+                        <p class="prefs-hint">Your board: <a href={mondayPrefs.boardUrl} target="_blank">{mondayPrefs.boardName}</a></p>
+                        <lightning-input
+                            class="slds-m-top_x-small"
+                            type="toggle"
+                            label="Post new tasks to Monday by default"
+                            message-toggle-active="Yes"
+                            message-toggle-inactive="No"
+                            checked={mondayPrefs.postByDefault}
+                            onchange={handleMondayDefaultChange}>
+                        </lightning-input>
+                        <p class="prefs-hint">Sets where the "Post to Monday?" switch starts on new tasks. You can still change it on each task.</p>
+                    </template>
+                    <template if:false={mondayAvailable}>
+                        <p class="prefs-hint">No Monday.com board is connected for you yet.</p>
+                    </template>
+                    <hr class="slds-m-vertical_medium" />
                     <p class="prefs-section-label">Columns included in exports and submissions</p>
                     <p class="prefs-hint">Changes save automatically and apply to both Export and Submit to Initiative Stage.</p>
                     <div class="field-selector-grid slds-m-top_small">

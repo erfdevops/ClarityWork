@@ -80,6 +80,36 @@ public with sharing class MondayApiClient {
         return (Map<String, Object>) data.get('create_item');
     }
 
+    // Sets several columns at once; the 'name' key renames the item
+    public static void updateItem(String boardId, String itemId, String columnValuesJson) {
+        query(
+            'mutation ($board: ID!, $item: ID!, $values: JSON!) { ' +
+            'change_multiple_column_values (board_id: $board, item_id: $item, column_values: $values) { id } }',
+            new Map<String, Object>{ 'board' => boardId, 'item' => itemId, 'values' => columnValuesJson }
+        );
+    }
+
+    // The item's current group Id, or null when the item no longer exists (deleted/archived in Monday)
+    public static String getItemGroupId(String itemId) {
+        Map<String, Object> data = query(
+            'query ($ids: [ID!]) { items (ids: $ids) { id state group { id } } }',
+            new Map<String, Object>{ 'ids' => new List<String>{ itemId } }
+        );
+        List<Object> items = (List<Object>) data.get('items');
+        if (items == null || items.isEmpty()) return null;
+        Map<String, Object> item = (Map<String, Object>) items[0];
+        if (item.get('state') != null && item.get('state') != 'active') return null;
+        Map<String, Object> grp = (Map<String, Object>) item.get('group');
+        return grp == null ? null : (String) grp.get('id');
+    }
+
+    public static void moveItemToGroup(String itemId, String groupId) {
+        query(
+            'mutation ($item: ID!, $group: String!) { move_item_to_group (item_id: $item, group_id: $group) { id } }',
+            new Map<String, Object>{ 'item' => itemId, 'group' => groupId }
+        );
+    }
+
     // Returns the new group's Id
     public static String createGroup(String boardId, String groupName) {
         Map<String, Object> data = query(
