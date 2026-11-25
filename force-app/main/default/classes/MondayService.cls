@@ -208,6 +208,15 @@ public with sharing class MondayService {
         @AuraEnabled public String  status;
         @AuraEnabled public String  url;
         @AuraEnabled public String  error;
+        @AuraEnabled public List<ItemLink> items = new List<ItemLink>();
+    }
+
+    // One posted Monday item (one per SMART goal on the task)
+    public class ItemLink {
+        @AuraEnabled public String goal;
+        @AuraEnabled public String url;
+        @AuraEnabled public String status;
+        @AuraEnabled public String error;
     }
 
     // The running user's Monday preferences (no callouts)
@@ -236,12 +245,14 @@ public with sharing class MondayService {
     }
 
     // Called by Clarity Work after a task is saved.
-    // enabled = false: records the choice and stops posting (an existing Monday item is left as is).
-    // enabled = true: creates the item, or updates the linked one (name, columns, and goal group).
-    // The item goes on the task OWNER's board, in the group named after the task's SMART goal
-    // (Initiative name; matched ignoring case/spacing, created if missing). Tasks without a goal go
-    // to a "No SMART Goal" group. Uses the primary goal (Task.Smart_Goal__c); one item per linked
-    // goal (Task_Smart_Goal__c) is a later step. Monday failures are recorded on the task, never thrown.
+    // enabled = false: records the choice and stops posting (existing Monday items are left as they are).
+    // enabled = true: one Monday item per SMART goal on the task (Task_Smart_Goal__c, plus the primary
+    //   Task.Smart_Goal__c), each in the group named after its goal (Initiative name; matched ignoring
+    //   case/spacing, created if missing). No goals → one item in the "No SMART Goal" group.
+    //   Existing items are updated (name, columns) and moved if needed; deleted ones are recreated;
+    //   items for goals removed from the task are archived in Monday.
+    // Items go on the task OWNER's board. Each item is tracked by a Monday_Item_Link__c; the Task's
+    // Monday_* fields summarize the first item and the overall status. Failures are recorded, never thrown.
     public static TaskMondayState syncTask(Id taskId, Boolean enabled) {
         Task t = taskForSync(taskId);
         Task upd = new Task(Id = taskId, Post_To_Monday__c = (enabled == true));
@@ -256,41 +267,152 @@ public with sharing class MondayService {
         if (board == null) {
             upd.Monday_Sync_Status__c = 'Not Connected';
             upd.Monday_Sync_Error__c  = 'The task owner has not connected a Monday.com board.';
-        } else {
-            // ── 1. Callouts ──────────────────────────────────────────────────
-            try {
-                Map<String, Object> mondayBoard = MondayApiClient.getBoard(board.Board_Id__c);
-                if (mondayBoard == null) {
-                    throw new MondayApiClient.MondayException('Monday.com board "' + board.Name + '" was not found or is not shared.');
-                }
-                String goalName = (t.Smart_Goal__c == null || String.isBlank(t.Smart_Goal__r.Initiative_Name__c))
-                    ? NO_GOAL_GROUP : t.Smart_Goal__r.Initiative_Name__c;
-                String groupId = groupIdFor(mondayBoard, goalName);
-                if (groupId == null) groupId = MondayApiClient.createGroup(board.Board_Id__c, goalName.trim().left(255));
+            update upd;
+            return stateOf(taskForSync(taskId));
+        }
 
-                String currentGroup = (String.isNotBlank(t.Monday_Item_Id__c) && t.Monday_Board_Id__c == board.Board_Id__c)
-                    ? MondayApiClient.getItemGroupId(t.Monday_Item_Id__c) : null;
-                if (currentGroup == null) {
-                    // Never posted, moved to another owner's board, or deleted in Monday: create it
-                    upd.Monday_Board_Id__c = board.Board_Id__c;
-                    postItem(t, board, groupId, upd);
-                } else {
-                    Map<String, Object> vals = columnValues(t, board, ownerMondayId(t, board));
-                    vals.put('name', t.Subject);
-                    MondayApiClient.updateItem(board.Board_Id__c, t.Monday_Item_Id__c, JSON.serialize(vals));
-                    if (currentGroup != groupId) MondayApiClient.moveItemToGroup(t.Monday_Item_Id__c, groupId);
-                    upd.Monday_Sync_Status__c = 'Synced';
-                    upd.Monday_Sync_Error__c  = null;
-                    upd.Monday_Last_Synced__c = System.now();
+        List<Goal> goals = goalsOf(t);
+        Map<String, Monday_Item_Link__c> existing = new Map<String, Monday_Item_Link__c>();
+        for (Monday_Item_Link__c l : linksOf(taskId)) existing.put(keyOf(l.Goal__c), l);
+        // A task posted before per-goal links keeps its item as the first goal's link
+        if (existing.isEmpty() && String.isNotBlank(t.Monday_Item_Id__c)) {
+            existing.put(goals[0].key, new Monday_Item_Link__c(
+                Task_Id__c = taskId, Goal__c = goals[0].id, Board_Id__c = t.Monday_Board_Id__c,
+                Item_Id__c = t.Monday_Item_Id__c, Item_URL__c = t.Monday_Item_URL__c));
+        }
+
+        List<Monday_Item_Link__c> toUpsert = new List<Monday_Item_Link__c>();
+        List<Monday_Item_Link__c> toDelete = new List<Monday_Item_Link__c>();
+        String boardError;
+
+        // ── 1. Callouts ──────────────────────────────────────────────────────
+        Map<String, Object> mondayBoard;
+        String ownerId;
+        try {
+            mondayBoard = MondayApiClient.getBoard(board.Board_Id__c);
+            if (mondayBoard == null) {
+                throw new MondayApiClient.MondayException('Monday.com board "' + board.Name + '" was not found or is not shared.');
+            }
+            ownerId = ownerMondayId(t, board);
+        } catch (Exception e) {
+            boardError = e.getMessage().left(255);
+        }
+
+        if (boardError == null) {
+            Map<String, String> groupIds = new Map<String, String>();
+            for (Goal g : goals) {
+                Monday_Item_Link__c link = existing.remove(g.key);
+                if (link == null) link = new Monday_Item_Link__c(Task_Id__c = taskId, Goal__c = g.id);
+                try {
+                    String groupKey = normalize(g.name);
+                    String groupId = groupIds.get(groupKey);
+                    if (groupId == null) groupId = groupIdFor(mondayBoard, g.name);
+                    if (groupId == null) groupId = MondayApiClient.createGroup(board.Board_Id__c, g.name.trim().left(255));
+                    groupIds.put(groupKey, groupId);
+
+                    // An item left on a previous owner's board is archived there and recreated on this one
+                    if (String.isNotBlank(link.Item_Id__c) && link.Board_Id__c != board.Board_Id__c) {
+                        archiveQuietly(link.Item_Id__c);
+                        link.Item_Id__c = null;
+                    }
+                    String currentGroup = String.isNotBlank(link.Item_Id__c) ? MondayApiClient.getItemGroupId(link.Item_Id__c) : null;
+                    if (currentGroup == null) {
+                        Map<String, Object> item = MondayApiClient.createItem(
+                            board.Board_Id__c, groupId, t.Subject, JSON.serialize(columnValues(t, board, ownerId)));
+                        link.Item_Id__c  = String.valueOf(item.get('id'));
+                        link.Item_URL__c = (String) item.get('url');
+                    } else {
+                        Map<String, Object> vals = columnValues(t, board, ownerId);
+                        vals.put('name', t.Subject);
+                        MondayApiClient.updateItem(board.Board_Id__c, link.Item_Id__c, JSON.serialize(vals));
+                        if (currentGroup != groupId) MondayApiClient.moveItemToGroup(link.Item_Id__c, groupId);
+                    }
+                    link.Board_Id__c    = board.Board_Id__c;
+                    link.Sync_Status__c = 'Synced';
+                    link.Sync_Error__c  = null;
+                    link.Last_Synced__c = System.now();
+                } catch (Exception e) {
+                    link.Board_Id__c    = board.Board_Id__c;
+                    link.Sync_Status__c = 'Error';
+                    link.Sync_Error__c  = e.getMessage().left(255);
                 }
-            } catch (Exception e) {
-                recordError(upd, e);
+                toUpsert.add(link);
+            }
+            // Goals removed from the task: archive their items
+            for (Monday_Item_Link__c old : existing.values()) {
+                if (String.isNotBlank(old.Item_Id__c)) archiveQuietly(old.Item_Id__c);
+                if (old.Id != null) toDelete.add(old);
             }
         }
 
         // ── 2. DML ───────────────────────────────────────────────────────────
+        if (boardError != null) {
+            upd.Monday_Sync_Status__c = 'Error';
+            upd.Monday_Sync_Error__c  = boardError;
+        } else {
+            Monday_Item_Link__c first = toUpsert[0];
+            upd.Monday_Board_Id__c    = board.Board_Id__c;
+            upd.Monday_Item_Id__c     = first.Item_Id__c;
+            upd.Monday_Item_URL__c    = first.Item_URL__c;
+            upd.Monday_Sync_Status__c = 'Synced';
+            upd.Monday_Sync_Error__c  = null;
+            for (Monday_Item_Link__c l : toUpsert) {
+                if (l.Sync_Status__c == 'Error') {
+                    upd.Monday_Sync_Status__c = 'Error';
+                    upd.Monday_Sync_Error__c  = l.Sync_Error__c;
+                    break;
+                }
+            }
+            if (upd.Monday_Sync_Status__c == 'Synced') upd.Monday_Last_Synced__c = System.now();
+            upsert toUpsert;
+            if (!toDelete.isEmpty()) delete toDelete;
+        }
         update upd;
         return stateOf(taskForSync(taskId));
+    }
+
+    private class Goal {
+        Id id; String name; String key;
+        Goal(Id id, String name) { this.id = id; this.name = name; this.key = keyOf(id); }
+    }
+
+    private static String keyOf(Id goalId) {
+        return goalId == null ? 'none' : String.valueOf(goalId).left(15);
+    }
+
+    // The task's goals, primary first, without duplicates; [No SMART Goal] when there are none
+    private static List<Goal> goalsOf(Task t) {
+        List<Goal> goals = new List<Goal>();
+        Set<String> seen = new Set<String>();
+        if (t.Smart_Goal__c != null && String.isNotBlank(t.Smart_Goal__r.Initiative_Name__c)) {
+            goals.add(new Goal(t.Smart_Goal__c, t.Smart_Goal__r.Initiative_Name__c));
+            seen.add(keyOf(t.Smart_Goal__c));
+        }
+        String id18 = String.valueOf(t.Id);
+        for (Task_Smart_Goal__c j : [
+            SELECT Smart_Goal__c, Smart_Goal__r.Initiative_Name__c FROM Task_Smart_Goal__c
+            WHERE (Task__c = :id18 OR Task__c = :id18.left(15)) AND Smart_Goal__c != null
+            ORDER BY CreatedDate ASC
+        ]) {
+            if (String.isBlank(j.Smart_Goal__r.Initiative_Name__c) || seen.contains(keyOf(j.Smart_Goal__c))) continue;
+            goals.add(new Goal(j.Smart_Goal__c, j.Smart_Goal__r.Initiative_Name__c));
+            seen.add(keyOf(j.Smart_Goal__c));
+        }
+        if (goals.isEmpty()) goals.add(new Goal(null, NO_GOAL_GROUP));
+        return goals;
+    }
+
+    private static List<Monday_Item_Link__c> linksOf(Id taskId) {
+        return [
+            SELECT Id, Task_Id__c, Goal__c, Goal__r.Initiative_Name__c, Board_Id__c, Item_Id__c, Item_URL__c,
+                   Sync_Status__c, Sync_Error__c, Last_Synced__c
+            FROM Monday_Item_Link__c WHERE Task_Id__c = :String.valueOf(taskId)
+            ORDER BY CreatedDate ASC
+        ];
+    }
+
+    private static void archiveQuietly(String itemId) {
+        try { MondayApiClient.archiveItem(itemId); } catch (Exception e) { /* already gone in Monday */ }
     }
 
     private static TaskMondayState stateOf(Task t) {
@@ -299,6 +421,14 @@ public with sharing class MondayService {
         s.status  = t.Monday_Sync_Status__c;
         s.url     = t.Monday_Item_URL__c;
         s.error   = t.Monday_Sync_Error__c;
+        for (Monday_Item_Link__c l : linksOf(t.Id)) {
+            ItemLink i = new ItemLink();
+            i.goal   = l.Goal__c == null ? NO_GOAL_GROUP : l.Goal__r.Initiative_Name__c;
+            i.url    = l.Item_URL__c;
+            i.status = l.Sync_Status__c;
+            i.error  = l.Sync_Error__c;
+            s.items.add(i);
+        }
         return s;
     }
 

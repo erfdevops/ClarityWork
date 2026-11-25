@@ -103,6 +103,14 @@ public with sharing class MondayApiClient {
         return grp == null ? null : (String) grp.get('id');
     }
 
+    // Archives (not deletes) the item; it can be restored from the board's archive in Monday
+    public static void archiveItem(String itemId) {
+        query(
+            'mutation ($item: ID!) { archive_item (item_id: $item) { id } }',
+            new Map<String, Object>{ 'item' => itemId }
+        );
+    }
+
     public static void moveItemToGroup(String itemId, String groupId) {
         query(
             'mutation ($item: ID!, $group: String!) { move_item_to_group (item_id: $item, group_id: $group) { id } }',

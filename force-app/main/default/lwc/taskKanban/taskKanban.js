@@ -407,8 +407,10 @@ export default class TaskKanban extends LightningElement {
         return !!(this.mondayPrefs && this.mondayPrefs.hasBoard);
     }
 
-    get editMondayUrl() {
-        return this.editMondayState ? this.editMondayState.url : null;
+    // One entry per posted Monday item (one per SMART goal on the task)
+    get editMondayItems() {
+        const items = (this.editMondayState && this.editMondayState.items) || [];
+        return items.map((i, idx) => ({ ...i, key: `mi-${idx}` }));
     }
 
     get editMondayProblem() {

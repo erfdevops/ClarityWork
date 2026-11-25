@@ -13,6 +13,12 @@ private class MondayServiceTest {
             return false;
         }
 
+        Integer count(String operation) {
+            Integer n = 0;
+            for (String b : bodies) if (b.contains(operation)) n++;
+            return n;
+        }
+
         public HttpResponse respond(HttpRequest req) {
             String body = req.getBody();
             bodies.add(body);
@@ -25,7 +31,9 @@ private class MondayServiceTest {
             }
             res.setStatusCode(200);
             Object data;
-            if (body.contains('change_multiple_column_values')) {
+            if (body.contains('archive_item')) {
+                data = new Map<String, Object>{ 'archive_item' => new Map<String, Object>{ 'id' => '888' } };
+            } else if (body.contains('change_multiple_column_values')) {
                 data = new Map<String, Object>{ 'change_multiple_column_values' => new Map<String, Object>{ 'id' => '555' } };
             } else if (body.contains('move_item_to_group')) {
                 data = new Map<String, Object>{ 'move_item_to_group' => new Map<String, Object>{ 'id' => '555' } };
@@ -323,6 +331,51 @@ private class MondayServiceTest {
 
         Assert.areEqual('Error', s.status);
         Assert.areEqual('Not Authenticated', s.error);
+    }
+
+    @IsTest
+    static void syncPostsOneItemPerGoal() {
+        MondayMock mock = new MondayMock();
+        Test.setMock(HttpCalloutMock.class, mock);
+        Task t = [SELECT Id, Smart_Goal__c FROM Task WHERE Subject = 'Goal task' LIMIT 1];
+        Initiative__c second = new Initiative__c(Initiative_Name__c = 'Second Goal');
+        insert second;
+        insert new List<Task_Smart_Goal__c>{
+            new Task_Smart_Goal__c(Task__c = t.Id, Smart_Goal__c = t.Smart_Goal__c),
+            new Task_Smart_Goal__c(Task__c = t.Id, Smart_Goal__c = second.Id)
+        };
+
+        Test.startTest();
+        MondayService.TaskMondayState s = MondayService.syncTask(t.Id, true);
+        Test.stopTest();
+
+        Assert.areEqual('Synced', s.status);
+        Assert.areEqual(2, mock.count('create_item'), 'one item per goal (primary not duplicated)');
+        Assert.isTrue(mock.sent('create_item', 'goal_grp'), 'item in the existing goal group');
+        Assert.isTrue(mock.sent('create_group', 'Second Goal'), 'group created for the second goal');
+        Assert.isTrue(mock.sent('create_item', 'new_group'), 'item in the second goal group');
+        Assert.areEqual(2, [SELECT COUNT() FROM Monday_Item_Link__c WHERE Task_Id__c = :t.Id]);
+        Assert.areEqual(2, s.items.size());
+        Assert.areEqual('Technology Support | User Support', s.items[0].goal);
+    }
+
+    @IsTest
+    static void syncArchivesItemsForRemovedGoals() {
+        MondayMock mock = new MondayMock();
+        Test.setMock(HttpCalloutMock.class, mock);
+        Task t = [SELECT Id FROM Task WHERE Subject = 'Goal task' LIMIT 1];
+        Initiative__c removed = new Initiative__c(Initiative_Name__c = 'Removed Goal');
+        insert removed;
+        insert new Monday_Item_Link__c(Task_Id__c = t.Id, Goal__c = removed.Id, Board_Id__c = '123', Item_Id__c = '888');
+
+        Test.startTest();
+        MondayService.syncTask(t.Id, true);
+        Test.stopTest();
+
+        Assert.isTrue(mock.sent('archive_item', '888'), 'item for the removed goal is archived');
+        List<Monday_Item_Link__c> links = [SELECT Goal__c FROM Monday_Item_Link__c WHERE Task_Id__c = :t.Id];
+        Assert.areEqual(1, links.size(), 'only the current goal keeps a link');
+        Assert.areNotEqual(removed.Id, links[0].Goal__c);
     }
 
     @IsTest

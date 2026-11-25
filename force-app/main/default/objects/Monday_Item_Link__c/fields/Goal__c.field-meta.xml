@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Goal__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>The SMART goal this item was posted for; blank = the No SMART Goal item.</description>
+    <externalId>false</externalId>
+    <label>Goal</label>
+    <referenceTo>Initiative__c</referenceTo>
+    <relationshipLabel>Monday Item Links</relationshipLabel>
+    <relationshipName>Monday_Item_Links</relationshipName>
+    <required>false</required>
+    <type>Lookup</type>
+</CustomField>

@@ -630,8 +630,15 @@
                                 checked={editPostToMonday}
                                 onchange={handleEditPostToMondayChange}>
                             </lightning-input>
-                            <template if:true={editMondayUrl}>
-                                <a href={editMondayUrl} target="_blank" class="slds-text-body_small">Open in Monday</a>
+                            <template for:each={editMondayItems} for:item="mi">
+                                <div key={mi.key} class="slds-text-body_small">
+                                    <template if:true={mi.url}>
+                                        <a href={mi.url} target="_blank">Open in Monday</a> &middot; {mi.goal}
+                                    </template>
+                                    <template if:false={mi.url}>
+                                        <span class="slds-text-color_error">{mi.goal}: {mi.error}</span>
+                                    </template>
+                                </div>
                             </template>
                             <template if:true={editMondayProblem}>
                                 <p class="slds-text-color_error slds-text-body_small">Last Monday post: {editMondayProblem}</p>
